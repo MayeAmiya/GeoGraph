@@ -24,16 +24,17 @@ namespace GeoGraph
 
     public sealed partial class MainWindow : Window
     {
-        public static GeoGraph.Network.NetworkClientBase NetworkClient;
+        public static GeoGraph.Network.NetworkClient _NetworkClient;
+        public static GeoGraph.Network.Connect _Connect;
         public static System.Type GlobalFrame;
 
         public MainWindow()
         {
             this.InitializeComponent();
-            NetworkClient = new GeoGraph.Network.NetworkClientBase();
+            //初始化网络客户端
+            _NetworkClient = new GeoGraph.Network.NetworkClient();
             App.MainFrame = MainFrame;
             GlobalFrame = typeof(MainWindow);
-            _ = NetworkClient.ConnectAsync(App._IP, App._Port);
         }
 
         private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
@@ -42,7 +43,7 @@ namespace GeoGraph
             NavigateTo(typeof(GeoGraph.Pages.Login.LoginPage));
         }
 
-        public void NavigateTo(System.Type page)
+        public static void NavigateTo(System.Type page)
         {
             // 记下页面
             GlobalFrame = page;

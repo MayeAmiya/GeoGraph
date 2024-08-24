@@ -8,28 +8,29 @@ using System.Threading.Tasks;
 
 namespace GeoGraph.Network
 {
-    public class NetworkClientBase
+    public class NetworkClient
     {
         private TcpClient _client;
         private NetworkStream _stream;
-        private string _username;
-        private string _password;
+
         private string _ipAddress;
         private int _port;
         private int recoonectTimes;
 
-        public NetworkClientBase()
+        public NetworkClient()
         {
             _client = null;
             _stream = null;
-            _username = null;
-            _password = null;
+
             _ipAddress = null;
             _port = -1;
+
             recoonectTimes = 0;
+
+            _ = ConnectAsync(App._IP, App._Port);
         }
 
-        public async Task<bool> ConnectAsync(string ipAddress, int port)
+        private async Task<bool> ConnectAsync(string ipAddress, int port)
         {
             try
             {

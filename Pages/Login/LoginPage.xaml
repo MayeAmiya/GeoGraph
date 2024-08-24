@@ -8,9 +8,22 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
     <Grid>
-        <Frame x:Name="rootFrame" />
-    </Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
+        <StackPanel Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Background="White" Padding="20" Width="300">
+            <TextBlock Text="Please log in" FontSize="24" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+            <TextBox x:Name="UsernameTextBox" PlaceholderText="Username" Width="200" Margin="0,0,0,10" KeyDown="UsernameTextBox_KeyDown"/>
+            <PasswordBox x:Name="PasswordBox" PlaceholderText="Password" Width="200" Margin="0,0,0,20" KeyDown="PasswordBox_KeyDown"/>
+            <Button Content="Login" Click="LoginButton_Click" Width="200" HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
 </Page>
