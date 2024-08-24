@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "GeoGraph (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "GeoGraph (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
