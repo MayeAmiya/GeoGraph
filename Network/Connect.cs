@@ -11,20 +11,20 @@ namespace GeoGraph.Network
     {
         private string _username;
         private string _password;
-        private static NetworkClient _server;
+        private static NetworkClient _client;
         private static string _connectcode;
         public Connect()
         {
             _connectcode = null;
             // 引用一个NetworkClient对象
-            NetworkClient _server = MainWindow._NetworkClient;
+            _client = MainWindow._NetworkClient;
         }
 
         public async Task<string> AttemptLoginAsync(string username, string password)
         {
             try
             {
-                if (_server == null) 
+                if (_client == null) 
                     return null;
                 // 密码哈希处理后再发送 在后端比对 不需要解密
                 // 这里组成JSON
@@ -45,7 +45,7 @@ namespace GeoGraph.Network
                 string jsonString = JsonSerializer.Serialize(loginData);
 
                 // 发送JSON
-                _connectcode = await _server.SendMessageAsync("login " + jsonString);
+                _connectcode = await _client.SendMessageAsync("login " + jsonString);
 
                 // 在这里处理登录结果
                 return _connectcode;
@@ -62,7 +62,7 @@ namespace GeoGraph.Network
         {
             try
             {
-                if (_server == null) 
+                if (_client == null) 
                     return null;
                 // 密码哈希处理后再发送 在后端比对 不需要解密
                 // 这里组成JSON
@@ -83,7 +83,7 @@ namespace GeoGraph.Network
                 string jsonString = JsonSerializer.Serialize(registerData);
 
                 // 发送JSON
-                _connectcode = await _server.SendMessageAsync(jsonString);
+                _connectcode = await _client.SendMessageAsync(jsonString);
 
                 // 在这里处理注册结果
                 return _connectcode;

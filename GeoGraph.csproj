@@ -14,8 +14,12 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Pages\Login\LoginPage.xaml" />
+    <None Remove="Pages\Login\WaitingPage.xaml" />
     <None Remove="Pages\Login\WelcomePage.xaml" />
+    <None Remove="Pages\MainPage\MapFrame.xaml" />
     <None Remove="Pages\MainPage\Master.xaml" />
+    <None Remove="Pages\MainPage\SaveInfFrame.xaml" />
+    <None Remove="Pages\MainPage\SettingFrame.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,6 +47,21 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Pages\MainPage\SaveInfFrame.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\MainPage\SettingFrame.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\MainPage\MapFrame.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Pages\Login\WelcomePage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -66,4 +85,10 @@
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
+  <ItemGroup>
+    <CustomAdditionalCompileInputs Remove="Pages\Login\WaitingPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Remove="Pages\Login\WaitingPage.xaml" />
+  </ItemGroup>
 </Project>

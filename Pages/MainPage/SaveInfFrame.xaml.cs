@@ -16,20 +16,16 @@ using Microsoft.UI.Xaml.Navigation;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace GeoGraph.Pages.Login
+namespace GeoGraph.Pages.MainPage
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class WelcomePage : Page
+    public sealed partial class SaveInfFrame : Page
     {
-        public WelcomePage()
+        public SaveInfFrame()
         {
             this.InitializeComponent();
-            System.Diagnostics.Debug.WriteLine("jump to MainPage.Master");
-            MainWindow.NavigateTo(typeof(GeoGraph.Pages.MainPage.Master));
-            System.Diagnostics.Debug.WriteLine("jump to MainPage.Master success");
         }
-
     }
 }

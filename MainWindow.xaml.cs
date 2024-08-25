@@ -12,6 +12,9 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using System.Diagnostics;
+using GeoGraph.Pages.Login;
+
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -26,28 +29,21 @@ namespace GeoGraph
     {
         public static GeoGraph.Network.NetworkClient _NetworkClient;
         public static GeoGraph.Network.Connect _Connect;
-        public static System.Type GlobalFrame;
 
         public MainWindow()
         {
             this.InitializeComponent();
             //初始化网络客户端
-            _NetworkClient = new GeoGraph.Network.NetworkClient();
-            App.MainFrame = MainFrame;
-            GlobalFrame = typeof(MainWindow);
-        }
+            // 后端未完成 _NetworkClient = new GeoGraph.Network.NetworkClient();
+            App.MainFrame = this.MainFrame;
 
-        private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            // 导航到另一个页面
-            NavigateTo(typeof(GeoGraph.Pages.Login.LoginPage));
+            MainWindow.NavigateTo(typeof(GeoGraph.Pages.Login.WaitingPage));
         }
 
         public static void NavigateTo(System.Type page)
         {
             // 记下页面
-            GlobalFrame = page;
-            App.MainFrame.Navigate(GlobalFrame);
+            App.MainFrame.Navigate(page);
         }
 
 
