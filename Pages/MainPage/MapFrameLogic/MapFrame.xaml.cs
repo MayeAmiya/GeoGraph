@@ -19,7 +19,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace GeoGraph.Pages.MainPage
+namespace GeoGraph.Pages.MainPage.MapFrameLogic
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
@@ -34,6 +34,8 @@ namespace GeoGraph.Pages.MainPage
             this.InitializeEllipses();
 
             this.InitializeMap();
+
+            this.InitializePointInfPane();
         }
         // 基本点信息
         private class BasePoint
@@ -75,6 +77,12 @@ namespace GeoGraph.Pages.MainPage
             // 初始化Map图像
             BitmapImage bitmapImage = new BitmapImage(new Uri(AssetsGet.newImagePath));
             Image.Source = bitmapImage;
+        }
+
+        private void InitializePointInfPane()
+        {
+            // 重定向到PointInfFrame
+            RightPaneFrame.Navigate(typeof(GeoGraph.Pages.MainPage.MapFrameLogic.PointInfFrame));
         }
 
         private void CreateEllipse(BasePoint position)

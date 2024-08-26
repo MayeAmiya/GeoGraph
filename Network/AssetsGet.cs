@@ -18,7 +18,7 @@ namespace GeoGraph.Network
         public static bool AssetsReady = false;
         public static List<(string Name, Type Type)> properties = new List<(string Name, Type)>();
 
-        public static class PointInf { }
+        public static class PointInf { };
 
         private static NetworkClient _client;
 
@@ -49,7 +49,7 @@ namespace GeoGraph.Network
 
                 if (type != null)
                 {
-                    properties.Add((name, type));
+                    AssetsGet.properties.Add((name, type));
                 }
                 else
                 {
@@ -72,7 +72,7 @@ namespace GeoGraph.Network
                 // 初始化字典与点信息对象
                 InitializeAndAddPointInf(key, AssetsGet.properties);
                 // 引用 点信息 对象
-                var pointInf = PointInfs[key];
+                var pointInf = AssetsGet.PointInfs[key];
                 // 建立 点信息 对象
                 var pointInfDict = (IDictionary<string, object>)pointInf;
                 // 逐个添加属性
@@ -107,7 +107,19 @@ namespace GeoGraph.Network
         public static void createPointInf(int key)
         {
             // 要求key值以唯一确定
-            InitializeAndAddPointInf(key, properties);
+            InitializeAndAddPointInf(key, AssetsGet.properties);
+            // 然后你要通过这个属性列表创建对应的视图 然后填充在点中 最后读入这里
+            var pointInf = PointInfs[key];
+            // 建立 点信息 对象
+            var pointInfDict = (IDictionary<string, object>)pointInf;
+            // 逐个添加属性
+            foreach (var property in AssetsGet.properties)
+            {
+                var name = property.Name;
+                //是的 这里为空 这个值应该是从视图中读取的 也许可以是个初始化好的Pointinf对象 直接赋给它
+                var value = "null";
+                pointInfDict[name] = value;
+            }
         }
     }
 
