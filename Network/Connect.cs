@@ -12,10 +12,11 @@ namespace GeoGraph.Network
         private string _username;
         private string _password;
         private static NetworkClient _client;
-        private static string _connectcode;
+        //用户名和密码用作第一次登录校验 之后用token
+        private static string _token;
         public Connect()
         {
-            _connectcode = null;
+            _token = null;
             // 引用一个NetworkClient对象
             _client = MainWindow._NetworkClient;
         }
@@ -44,11 +45,11 @@ namespace GeoGraph.Network
 
                 string jsonString = JsonSerializer.Serialize(loginData);
 
-                // 发送JSON
-                _connectcode = await _client.SendMessageAsync("login " + jsonString);
+                // 发送JSON 但我们可以认为返回的也是个json 所以要解析
+                _token = await _client.SendMessageAsync("login " + jsonString);
 
                 // 在这里处理登录结果
-                return _connectcode;
+                return _token;
             }
             catch (Exception ex)
             {
@@ -83,10 +84,10 @@ namespace GeoGraph.Network
                 string jsonString = JsonSerializer.Serialize(registerData);
 
                 // 发送JSON
-                _connectcode = await _client.SendMessageAsync(jsonString);
+                string _ret = await _client.SendMessageAsync(jsonString);
 
                 // 在这里处理注册结果
-                return _connectcode;
+                return _ret;
             }
             catch (Exception ex)
             {

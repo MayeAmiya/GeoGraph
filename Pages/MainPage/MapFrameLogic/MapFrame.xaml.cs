@@ -36,17 +36,15 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             this.InitializeMap();
 
             this.InitializePointInfPane();
+
+            PointInf = new PointInf();
         }
         // 基本点信息
-        private class BasePoint
-        {
-            public Point location;
-            public int pointInfCode;
-            public bool isTemp = false;
-        }
-        // 动态点信息 在NetWork中
 
-        // 该考虑点预载信息了
+        // 动态点信息 在NetWork中
+        public PointInf PointInf;
+        // 该考虑点预载信息了 这部分在初始化时自动完成
+
         private List<BasePoint> originalPositions;
         // 需要一个字典将pointInf与点的信息对应起来 
 
@@ -54,8 +52,8 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
         private Ellipse _selectedPoint;
         private Point _lastPointerPosition;
 
-        private bool _isDragging;
-        private double _currentScale = 1.0;
+        private static bool _isDragging;
+        private static double _currentScale = 1.0;
 
         private const double ScaleStep = 0.1;
         private const double MaxScale = 5.0;
@@ -72,10 +70,10 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
         private void InitializeMap()
         {
             // 初始化Canvas大小
-            MainCanvas.Width = AssetsGet.MapInfWidth;
-            MainCanvas.Height = AssetsGet.MapInfHeight;
+            MainCanvas.Width = Assets.MapInfWidth;
+            MainCanvas.Height = Assets.MapInfHeight;
             // 初始化Map图像
-            BitmapImage bitmapImage = new BitmapImage(new Uri(AssetsGet.newImagePath));
+            BitmapImage bitmapImage = new BitmapImage(new Uri(Assets.newImagePath));
             Image.Source = bitmapImage;
         }
 
@@ -161,7 +159,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             else
             {
                 //读取此时鼠标点击的位置 注意这个位置相对画布实际的位置
-                BasePoint temp = new BasePoint
+                BasePoint temp = new BasePoint()
                 {
                     //这个Position要作变换
                     location = e.GetCurrentPoint(MainCanvas).Position,
@@ -214,7 +212,13 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
 
         }
 
-
+        public int pointInfSelect()
+        {
+            if(this._selectedPoint != null)
+                return ((BasePoint)this._selectedPoint.Tag).pointInfCode;
+            else
+                return 0;
+        }
     }
 }
 

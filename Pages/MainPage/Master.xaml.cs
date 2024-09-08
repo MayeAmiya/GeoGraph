@@ -46,7 +46,7 @@ namespace GeoGraph.Pages.MainPage
             switch (itemTag)
             {
                 case "MapPage":
-                    pageType = typeof(MapFrame);
+                    pageType = typeof(GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame);
                     break;
                 case "SavePage":
                     pageType = typeof(SaveInfFrame);
