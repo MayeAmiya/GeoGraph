@@ -8,11 +8,13 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.Media.Protection.PlayReady;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GeoGraph.Network
 {
-    //设置属性类型
+    // 设置属性类型
     public struct Property
     {
         public string Name { get; set; }
@@ -20,6 +22,7 @@ namespace GeoGraph.Network
         // Type当有约束 String ; Int Double Enum Bool ; List
         public string Type { get; set; }
         public object Object { get; set; }
+        public string date { get; set;}
 
         // 通过检查updated和deleted来判断是否需要更新 事后只需根据索引号上传信息即可
         public bool deleted = false;
@@ -31,25 +34,24 @@ namespace GeoGraph.Network
             Index = index;
             Type = type;
             Object = obj;
+            date = DateTime.Now.ToString();
         }
-
+        
+        public void dateUpdate()
+        {
+            date = DateTime.Now.ToString();
+        }
     }
 
+    // 设置基点类型
     public class BasePoint
     {
         public Point location;
         public int pointInfCode;
+        public string date;
         public bool isTemp = false;
         public bool deleted = false;
         public bool updated = false;
-
-        public BasePoint()
-        {
-            // 可以选择是否初始化默认值
-            this.location = new Point(); // 默认值
-            this.pointInfCode = 0; // 默认值
-            this.isTemp = false; // 默认值
-        }
 
         public BasePoint(Point location, Int32 PointInfCode)
         {
@@ -57,17 +59,29 @@ namespace GeoGraph.Network
             //是的 理应根据时间和位置生成hashcode
             this.pointInfCode = PointInfCode;
             // DateTime.Now.TimeOfDay.GetHashCode() ^ location.X.GetHashCode() ^ location.Y.GetHashCode();
+            this.isTemp = false;
+            this.deleted = false;
+            this.updated = false;
+            date = DateTime.Now.ToString();
+        }
+
+        public void dateUpdate()
+        {
+            date = DateTime.Now.ToString();
         }
     }
 
+    // 点的总集 所有点信息汇总于此
     public class PointInf
     {
         private static NetworkClient _client;
+        public static string MapName;
         // 在选择地图后初始化 所以这里应当在Assets中初始化
-        public PointInf()
+        public PointInf(string mapname)
         {
             _client = MainWindow._NetworkClient;
 
+            MapName = mapname;
             basePoints = new List<BasePoint>();
             ParsePointInfAsync();
 
@@ -75,10 +89,11 @@ namespace GeoGraph.Network
 
         }
         // 点信息列表
-        List<BasePoint> basePoints;
+        public List<BasePoint> basePoints;
         // 属性列表
         public Dictionary<int, Property> basicInfo;
-
+        public Dictionary<string, Property> EnumInfo;
+        public Dictionary<string, Property> PageInfo;
         // 从服务器获取点信息 主表
         public async void ParsePointInfAsync()
         {
@@ -151,6 +166,7 @@ namespace GeoGraph.Network
                 if (type != "Enum" && type != "Page")
                 {
                     obj = obj_content;
+                    basicInfo.Add(index, new Property(name, index, type, obj));
                 }
                 else
                 {
@@ -161,8 +177,20 @@ namespace GeoGraph.Network
                     {
                         (obj as List<int>).Add(item.GetInt32());
                     }
+
+                    Property finder = new Property(name, index, type, obj);
+                    if (type == "Enum")
+                    {
+                        // 枚举类型
+                        EnumInfo.Add(name, finder);
+                    }
+                    else
+                    {
+                        // 页面类型
+                        PageInfo.Add(name, finder);
+                    }
+                    basicInfo.Add(index, finder);
                 }
-                basicInfo.Add(index, new Property(name, index, type, obj));
             }
             return true;
         }
@@ -184,32 +212,7 @@ namespace GeoGraph.Network
          * BasePoint  ： String ， Int ， Double ， Bool ， Enum ， Page
          * 每一个项都有一个外键绑定指向一个BasePoint或一个Page 而Page外键绑定指向BasePoint或Page 并且要检查避免循环依赖
          */
-
-        public async void RemovePoint(int pointindex)
-        {
-            var basePointToRemove = basePoints.FirstOrDefault(bp => bp.pointInfCode == pointindex);
-            //也许我们可以把更改集中于本地
-            basePointToRemove.deleted = true;
-        }
-    }
-
-    internal class PointInfSingle
-    {
-       
-        private PointInf _pointinf;
-
-        public PointInfSingle(PointInf pointinf)
-        {
-            _pointinf = pointinf;
-            Single_basicInfo = new Dictionary<int, Property>();
-        }
-        public Dictionary<int, Property> Single_basicInfo; // 以数据库结构存储 自己找到自己的位置
-
-        public void clear()
-        {
-            Single_basicInfo.Clear();
-        }
-
+        // 获取值
         public async void GetValue(int index)
         {
             // 这里传入的是PageInfCode 我们要从PointInf中获取
@@ -217,116 +220,125 @@ namespace GeoGraph.Network
             // PageInfCode是一个索引值 通过这个值我们可以找到对应的Page
 
             // Dict不允许重复索引
-            if(_pointinf.basicInfo.ContainsKey(index) && !Single_basicInfo.ContainsKey(index))
-                Single_basicInfo.Add(index,_pointinf.basicInfo[index]);
-            else
+            if (!basicInfo.ContainsKey(index))
             {
-                if(await _pointinf.ParsePropertyInfAsync(index))
+                if (await ParsePropertyInfAsync(index))
                     GetValue(index);
                 return;
             }
 
-
             // Page 和 Enum 中的Object是一个List<int> 里面存的是索引值
             // 通过索引值我们可以找到对应的基本数据
-            ListHandle(index);
         }
-
-        public async void ListHandle(int index)
-        {
-            foreach (var item in (Single_basicInfo[index].Object as List<int>))
-            {
-                // 如果是基本数据类型 那么直接添加 如果不是 那么递归
-                if (_pointinf.basicInfo.ContainsKey(item) && !Single_basicInfo.ContainsKey(item))
-                    if (_pointinf.basicInfo[item].Type == "Enum" || _pointinf.basicInfo[item].Type == "Page")
-                        if (_pointinf.basicInfo[item].Object is int Index)
-                            ListHandle(Index);
-                        else
-                            Single_basicInfo.Add(item, _pointinf.basicInfo[item]);
-                else
-                {
-                    if(_pointinf.basicInfo[item].Object is int Index)
-                        if(await _pointinf.ParsePropertyInfAsync(Index))
-                                ListHandle(Index);
-                    }
-            }
-        }
-
     }
 
-    internal class PointInfTemp
+    // 这里存储本次更改的点信息 作用于单个点
+    public class PointInfTemp
     {
-        private PointInfSingle _pointinfsingle;
+        private PointInf _pointinf;
         private Property Temp_Page;
-        public PointInfTemp(PointInfSingle pointinfsingle)
+        public PointInfTemp(PointInf pointinf)
         {
-            _pointinfsingle = _pointinfsingle;
+            _pointinf = pointinf;
             Temp_basicInfo = new Dictionary<int, Property>();
         }
-        private Dictionary<int, Property> Temp_basicInfo;
+        // 用于UpdatePointInf的更新
+        public Dictionary<int, Property> GET_Temp_basicInfo()
+        {
+            return Temp_basicInfo;
+        }
 
+        public Dictionary<int, Property> Temp_basicInfo;
+        public Dictionary<string, Property> Temp_EnumInfo;
+        public Dictionary<string, Property> Temp_PageInfo;
+
+        // 清空本次更改信息
         public void clear()
         {
             Temp_basicInfo.Clear();
+            Temp_EnumInfo.Clear();
+            Temp_PageInfo.Clear();
         }
 
-        public void Add_Temp_PointInf(string name, string type, string info)
+        // 删除点信息
+        public void remove(int index)
+        {
+            // 如果这个点信息是原有的呢！
+            if(!Temp_basicInfo.ContainsKey(index))
+            {
+                // 如果是原有的点信息 那么只需要打上删除标记 并且加入到本次更改列表
+                var existingProperty = _pointinf.basicInfo[index];
+                existingProperty.deleted = true;
+                Temp_basicInfo.Add(index, existingProperty);
+            }
+            else
+            {
+                // 删除项 删除页面 删除枚举
+                var existingProperty = Temp_basicInfo[index];
+                existingProperty.deleted = true;
+                Temp_basicInfo[index] = existingProperty;
+                // 如果要删除点 需要给对应点打上删除标记并上传到本次更改列表
+            }
+        }
+
+        // 增加点信息
+        public Property newItem(string name, string type, string info)
         {
             int hashcode = name.GetHashCode()^type.GetHashCode()^info.GetHashCode()+DateTime.Now.TimeOfDay.GetHashCode();
-            new Property(name, hashcode, type, info);
-            Temp_basicInfo.Add(hashcode, new Property(name, hashcode, type, info));
+            Property temp_item = new Property(name, hashcode, type, info);
+            // 加入本次更改信息列表
+            Temp_basicInfo.Add(hashcode, temp_item);
 
             var tempPage = Temp_Page.Object as List<int>; // 尝试将 object 转换为 List<int>
             tempPage.Add(hashcode); // 添加 hashcode 到列表
-            
-        }
-        public void merge()
-        {
-            foreach (var item in Temp_basicInfo)
-            {
-                if(!_pointinfsingle.Single_basicInfo.ContainsKey(item.Key))
-                    _pointinfsingle.Single_basicInfo.Add(item.Key, item.Value);
-                else
-                {
-                    var existingProperty = _pointinfsingle.Single_basicInfo[item.Key];
-                    // 确保 Object 是 List<int> 类型
-                    if (existingProperty.Object is List<int> existingList && item.Value.Object is List<int> newList)
-                    {
-                        // 创建新列表的深拷贝
-                        existingProperty.Object = new List<int>(newList);
-                        // 更新字典中的对象
-                        _pointinfsingle.Single_basicInfo[item.Key] = existingProperty;
-                    }
-                }
-                // 如果同key 则覆盖 这里需要校验 显然有且只有上文复制页面的时候才会出现同key
-            }
-        }
-        public void remove(int index)
-        {
-            Temp_basicInfo.Remove(index);
+            return temp_item;
         }
 
-        // 创建新页面时在这里创建副本保存未保存项目 合并时直接添加
-
-        public void newPage(int pageindex)
+        public Property newPage(int pageindex)
         {
             //复制一个page
+            Property Temp_Page;
             if(!Temp_basicInfo.ContainsKey(pageindex))
             {            
                 Temp_Page = new Property
                 {
-                    Name = _pointinfsingle.Single_basicInfo[pageindex].Name,
-                    Index = _pointinfsingle.Single_basicInfo[pageindex].Index,
-                    Type = _pointinfsingle.Single_basicInfo[pageindex].Type,
-                    Object = new List<int> ((List<int>)_pointinfsingle.Single_basicInfo[pageindex].Object)
+                    Name = _pointinf.basicInfo[pageindex].Name,
+                    Index = _pointinf.basicInfo[pageindex].Index,
+                    Type = _pointinf.basicInfo[pageindex].Type,
+                    Object = new List<int> ((List<int>)_pointinf.basicInfo[pageindex].Object)
                 };
-                    Temp_basicInfo.Add(Temp_Page.Index, Temp_Page);
+                Temp_basicInfo.Add(Temp_Page.Index, Temp_Page);
+                Temp_PageInfo.Add(Temp_Page.Name, Temp_Page);
             }
             else
             {
                 // 如果存在 有且只有可能是已经保存了的页面
                 Temp_Page = Temp_basicInfo[pageindex];
             }
+            return Temp_Page;
+        }
+
+        public Property newEnum(int enumindex)
+        {
+            Property Temp_Enum;
+            if (!Temp_basicInfo.ContainsKey(enumindex))
+            {
+                Temp_Enum = new Property
+                {
+                    Name = _pointinf.basicInfo[enumindex].Name,
+                    Index = _pointinf.basicInfo[enumindex].Index,
+                    Type = _pointinf.basicInfo[enumindex].Type,
+                    Object = new List<int>((List<int>)_pointinf.basicInfo[enumindex].Object)
+                };
+                Temp_basicInfo.Add(Temp_Page.Index, Temp_Page);
+                Temp_EnumInfo.Add(Temp_Page.Name, Temp_Page);
+            }
+            else
+            {
+                // 如果存在 有且只有可能是已经保存了的页面
+                Temp_Enum = Temp_basicInfo[enumindex];
+            }
+            return Temp_Enum;
         }
     }
 }

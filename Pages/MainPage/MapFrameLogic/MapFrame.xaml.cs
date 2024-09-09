@@ -31,18 +31,13 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
         {
             this.InitializeComponent();
 
-            this.InitializeEllipses();
-
             this.InitializeMap();
 
             this.InitializePointInfPane();
 
-            PointInf = new PointInf();
         }
         // 基本点信息
 
-        // 动态点信息 在NetWork中
-        public PointInf PointInf;
         // 该考虑点预载信息了 这部分在初始化时自动完成
 
         private List<BasePoint> originalPositions;
@@ -59,13 +54,6 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
         private const double MaxScale = 5.0;
         private const double MinScale = 1.0;
 
-        
-
-        private void InitializeEllipses()
-        {
-            // 初始化点列表
-            originalPositions = new List<BasePoint>();
-        }
 
         private void InitializeMap()
         {
@@ -75,6 +63,8 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             // 初始化Map图像
             BitmapImage bitmapImage = new BitmapImage(new Uri(Assets.newImagePath));
             Image.Source = bitmapImage;
+            // 同时在Assets初始化PointInf和Update的数据 根据地图类型直接引用
+            originalPositions = Assets._Basic_PointInf.basePoints;
         }
 
         private void InitializePointInfPane()
@@ -82,6 +72,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             // 重定向到PointInfFrame
             RightPaneFrame.Navigate(typeof(GeoGraph.Pages.MainPage.MapFrameLogic.PointInfFrame));
         }
+
 
         private void CreateEllipse(BasePoint position)
         {
@@ -159,11 +150,9 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             else
             {
                 //读取此时鼠标点击的位置 注意这个位置相对画布实际的位置
-                BasePoint temp = new BasePoint()
+                BasePoint temp = new BasePoint(e.GetCurrentPoint(MainCanvas).Position,-1)
                 {
                     //这个Position要作变换
-                    location = e.GetCurrentPoint(MainCanvas).Position,
-                    pointInfCode = -1,
                     isTemp = true
                 };
                 CreateEllipse(temp);
@@ -192,7 +181,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
 
         }
 
-        // 选中点
+        // 选中点 这里不好 创建点应用点创建工具 而不是鼠标右键点击
         private void OnEllipseTapped(object sender, TappedRoutedEventArgs e)
         {
             Ellipse tappedEllipse = sender as Ellipse;
@@ -212,12 +201,12 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
 
         }
 
-        public int pointInfSelect()
+        public BasePoint pointInfSelect()
         {
             if(this._selectedPoint != null)
-                return ((BasePoint)this._selectedPoint.Tag).pointInfCode;
+                return ((BasePoint)this._selectedPoint.Tag);
             else
-                return 0;
+                return null;
         }
     }
 }

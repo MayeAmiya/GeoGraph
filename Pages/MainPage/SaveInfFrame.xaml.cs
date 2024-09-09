@@ -20,6 +20,8 @@ namespace GeoGraph.Pages.MainPage
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
+    /// 这个页面主要是最终确认保存信息 这里应当先展示删除内容 再展示添加内容 最后展示修改内容并同时显示对比
+    /// 最后提供一个上传确认按钮 对应网络功能里的update
     /// </summary>
     public sealed partial class SaveInfFrame : Page
     {

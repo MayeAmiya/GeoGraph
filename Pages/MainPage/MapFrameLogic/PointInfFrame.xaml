@@ -24,30 +24,16 @@
         <ScrollViewer x:Name="NavigationScrollViewer" Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <StackPanel x:Name="NavigationStackPanel" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
                 
-                <BreadcrumbBar x:Name="BreadcrumbBar">
-                    <BreadcrumbBar.ItemTemplate>
-                        <DataTemplate x:DataType = "local:PageFolder">
-                            <BreadcrumbBarItem Content="{Binding}" AutomationProperties.Name="{Binding Name}">
-                                <BreadcrumbBarItem.ContentTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}" />
-                                    </DataTemplate>
-                                </BreadcrumbBarItem.ContentTemplate>
-                            </BreadcrumbBarItem>
-                        </DataTemplate>
-                    </BreadcrumbBar.ItemTemplate>
-                </BreadcrumbBar>
                 
             </StackPanel>
         </ScrollViewer>
 
         <!-- 数据显示区域 -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Orientation="Vertical" VerticalAlignment="Top" Margin="10,10,10,10">
+            <StackPanel x:Name="Information" Orientation="Vertical" VerticalAlignment="Top" Margin="10,10,10,10">
                 <!-- 数据行 -->
                 <!-- 添加更多数据行 -->
                 <!-- 添加项按钮 -->
-                <Button Content="添加项" Click="AddData_Click" />
             </StackPanel>
         </ScrollViewer>
 
