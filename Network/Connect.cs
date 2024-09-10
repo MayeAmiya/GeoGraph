@@ -9,11 +9,15 @@ namespace GeoGraph.Network
 {
     public class Connect
     {
-        private string _username;
-        private string _password;
+        private static string _username;
+        private static string _password;
         private static NetworkClient _client;
         //用户名和密码用作第一次登录校验 之后用token
         private static string _token;
+        private static string _permission;
+        private static string _userInfo;
+        private static string _userRank;
+        private static bool _isLogin;
         public Connect()
         {
             _token = null;
@@ -95,6 +99,14 @@ namespace GeoGraph.Network
                 Console.WriteLine($"Error during register: {ex.Message}");
                 return null;
             }
+        }
+
+        public static string Greeting()
+        {
+            if(_isLogin)
+                return _userRank + " " + _username;
+            else
+                return "DisConnected";
         }
     }
 }

@@ -93,61 +93,107 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 {
                     //说明类型是字符串！这里是字符串处理
                     if (ItemNow.Type == "String")
+                    {
+                        // 说明是一个字符串
+                        string content = ItemNow.Object as string;
+                        // 字符串一般是一个Name:Value的形式
+                        // 创建一对TextBox
+
+                        // 创建不可修改的文本框
+                        TextBox readOnlyTextBox = new TextBox
                         {
-                            // 说明是一个字符串
-                            string content = ItemNow.Object as string;
-                            // 字符串一般是一个Name:Value的形式
-                            // 创建一对TextBox
+                            Text = $"Read-Only: {ItemNow.Name}",
+                            Margin = new Microsoft.UI.Xaml.Thickness(5),
+                            Width = 150,
+                            IsReadOnly = true
+                        };
+                        // 创建可编辑的文本框
+                        TextBox editableTextBox = new TextBox
+                        {
+                            Text = $"Editable: {content}",
+                            Margin = new Microsoft.UI.Xaml.Thickness(5),
+                            Width = 150
+                        };
 
-                            // 创建不可修改的文本框
-                            TextBox readOnlyTextBox = new TextBox
-                            {
-                                Text = $"Read-Only: {ItemNow.Name}",
-                                Margin = new Microsoft.UI.Xaml.Thickness(5),
-                                Width = 150,
-                                IsReadOnly = true
-                            };
-                            // 创建可编辑的文本框
-                            TextBox editableTextBox = new TextBox
-                            {
-                                Text = $"Editable: {content}",
-                                Margin = new Microsoft.UI.Xaml.Thickness(5),
-                                Width = 150
-                            };
+                        // 创建水平布局容器
+                        StackPanel horizontalPanel = new StackPanel
+                        {
+                            Orientation = Orientation.Horizontal,
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
 
-                            // 创建水平布局容器
-                            StackPanel horizontalPanel = new StackPanel
-                            {
-                                Orientation = Orientation.Horizontal,
-                                Margin = new Microsoft.UI.Xaml.Thickness(5)
-                            };
-
-                            // 将文本框添加到水平布局容器中
-                            horizontalPanel.Children.Add(readOnlyTextBox);
-                            horizontalPanel.Children.Add(editableTextBox);
-
-                            // 将水平布局容器添加到页面的某个容器控件中（例如 StackPanel 或 Grid）
-                            Information.Children.Add(horizontalPanel);
-                        }
+                        // 将文本框添加到水平布局容器中
+                        horizontalPanel.Children.Add(readOnlyTextBox);
+                        horizontalPanel.Children.Add(editableTextBox);
+                        // 添加删除按钮
+                        horizontalPanel.Children.Add(Item_Delete_Button(horizontalPanel));
+                        // 将水平布局容器添加到页面的某个容器控件中（例如 StackPanel 或 Grid）
+                        Information.Children.Add(horizontalPanel);
+                    
+                    }
                     if (ItemNow.Type == "Image")
+                     {
+                        // 说明是一个图片 这里是图片名 我们需要下载图片并且在asset中找到他 暂且不做
+                        string content = ItemNow.Object as string;
+                        // 创建一个图像显示 缩放至合适大小 宽度为控件宽度
+                        string ImagePath = await Assets.FindImage(content);
+                        Image image = new Image
                         {
-                            // 说明是一个图片 这里是图片名 我们需要下载图片并且在asset中找到他 暂且不做
-                            string content = ItemNow.Object as string;
-                            // 创建一个图像显示 缩放至合适大小 宽度为控件宽度
-                            string ImagePath = await Assets.FindImage(content);
-                            Image image = new Image
-                            {
-                                Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(content)),
-                                Stretch = Microsoft.UI.Xaml.Media.Stretch.Uniform,
-                                Width = 150,
-                                Height = 150
-                            };
-                        }
+                            Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(content)),
+                            Stretch = Microsoft.UI.Xaml.Media.Stretch.Uniform,
+                            Width = 150,
+                            Height = 150
+                        };
+                        StackPanel horizontalPanel = new StackPanel
+                        {
+                            Orientation = Orientation.Horizontal,
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
+                        horizontalPanel.Children.Add(image);
+                        horizontalPanel.Children.Add(Item_Delete_Button(horizontalPanel));
+                        Information.Children.Add(horizontalPanel);
+                    }
                 }
                 else if (ItemNow.Type == "Enum")
                 {
                     // 说明是一个枚举
                     // 用ListView吧！
+                    var list = ItemNow.Object as List<int>;
+                    ListView listView = new ListView
+                    {
+                        Margin = new Microsoft.UI.Xaml.Thickness(5),
+                        Width = 150,
+                        Height = 150
+                    };
+                    // 创建一个ListViewItem
+                    foreach (int i in list)
+                    {
+                        Property EnumNow = find(i);
+                        ListViewItem listViewItem = new ListViewItem
+                        {
+                            Content = EnumNow.Object as string,
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
+                        listViewItem.PointerEntered += (sender, e) => PageView(EnumNow, listViewItem);
+                        listView.Items.Add(listViewItem);
+                    }
+                    // 创建不可修改的文本框
+                    TextBox readOnlyTextBox = new TextBox
+                    {
+                        Text = $"Read-Only: {ItemNow.Name}",
+                        Margin = new Microsoft.UI.Xaml.Thickness(5),
+                        Width = 150,
+                        IsReadOnly = true
+                    };
+                    StackPanel horizontalPanel = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal,
+                        Margin = new Microsoft.UI.Xaml.Thickness(5)
+                    };
+                    horizontalPanel.Children.Add(readOnlyTextBox);
+                    horizontalPanel.Children.Add(listView);
+                    horizontalPanel.Children.Add(Item_Delete_Button(horizontalPanel));
+                    Information.Children.Add(horizontalPanel);
                 }
                 else if (ItemNow.Type == "Page")
                 {
@@ -185,7 +231,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                     // 将文本框添加到水平布局容器中
                     horizontalPanel.Children.Add(readOnlyTextBox);
                     horizontalPanel.Children.Add(button);
-
+                    horizontalPanel.Children.Add(Item_Delete_Button(horizontalPanel));
                     // 将水平布局容器添加到页面的某个容器控件中（例如 StackPanel 或 Grid）
                     Information.Children.Add(horizontalPanel);
                 }
@@ -194,24 +240,18 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                     Console.WriteLine("Error: Unknown Type");
                 }
             }
-            // 添加添加按钮
-            Button AddButton = new Button
-            {
-                Content = "Add +",
-                Margin = new Microsoft.UI.Xaml.Thickness(5),
-            };
-            void AddButtonClick(object sender, RoutedEventArgs e)
-            {
-                //选择项目
-            }
-            AddButton.Click += AddButtonClick;
-            Information.Children.Add(AddButton);
 
+
+
+
+
+            Item_Add_Button();
         }
 
         private void nextPage(int Index)
         {
             // 跳转到下一个页面
+            // 如果是从页面按钮点击进入 则需要刷新导航栏
             Temp_PointInf.newPage(Index);
             refreshPage(Index);
         }
@@ -220,21 +260,90 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
         // 其次根据点信息列表初始化控件
         // 如果没有指定 那么就是空白页面和增加表项按钮
 
+        // 添加 元素添加按钮
+        private void Item_Add_Button()
+        {
+
+            Button AddButton = new Button
+            {
+                Content = "Add +",
+                Margin = new Microsoft.UI.Xaml.Thickness(5),
+            };
+            void AddButtonClick(object sender, RoutedEventArgs e)
+            {
+
+                //选择项目 展开选择行
+            }
+            AddButton.Click += AddButtonClick;
+            Information.Children.Add(AddButton);
+        }
+
+        private Button Item_Delete_Button(StackPanel horizontalPanel)
+        {
+            Button DeleteButton = new Button
+            {
+                Content = "Delete -",
+                Margin = new Microsoft.UI.Xaml.Thickness(5),
+            };
+            void DeleteButtonClick(object sender, RoutedEventArgs e)
+            {
+                //选择项目 删掉这行
+                Information.Children.Remove(horizontalPanel);
+            }
+            DeleteButton.Click += DeleteButtonClick;
+            Information.Children.Add(DeleteButton);
+            return DeleteButton;
+        }
+
+        private Button Item_Update_Button(StackPanel horizontalPanel)
+        {
+            Button UpdateButton = new Button
+            {
+                Content = "Update",
+                Margin = new Microsoft.UI.Xaml.Thickness(5),
+            };
+            void UpdateButtonClick(object sender, RoutedEventArgs e)
+            {
+                //选择项目 更新这行
+            }
+            UpdateButton.Click += UpdateButtonClick;
+            Information.Children.Add(UpdateButton);
+            return UpdateButton;
+        }
+
+        private void PageView(Property EnumNow, ListViewItem listViewItem)
+        {
+            // 这里展示页面信息
+            var enumValue = EnumNow.date;
+
+            // 显示一个 Flyout 提示信息
+            var flyout = new Flyout
+            {
+                Content = new TextBlock { Text = $"{enumValue}" }
+            };
+
+            // 在当前元素处显示 Flyout
+            flyout.ShowAt(listViewItem);
+            
+        }
+
         private void SavePoint_Click(object sender, RoutedEventArgs e)
         {
             Update_PointInf.merge();
             // 保存数据到更新请求列表
         }
+
+        private void AbrotPoint_Clock(object sender, RoutedEventArgs e)
+        {
+            Temp_PointInf.clear();
+            // 退出不保存 放弃本点更改
+        }
+
         private void DeletePoint_Click(object sender, RoutedEventArgs e)
         {
             Temp_PointInf.clear();
             Update_PointInf.RemovePoint(_mapFrame.pointInfSelect());
             // 添加到删除请求列表 并且打上删除标签
-        }
-        private void AbortPoint_Click(object sender, RoutedEventArgs e)
-        {
-            Temp_PointInf.clear();
-            // 退出不保存 放弃本点更改
         }
     }
 }

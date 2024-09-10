@@ -13,6 +13,8 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Security.AccessControl;
+using GeoGraph.Network;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -28,6 +30,7 @@ namespace GeoGraph.Pages.MainPage
         {
             this.InitializeComponent();
             System.Diagnostics.Debug.WriteLine("MasterHere");
+            MasterPageFrame.Navigate(typeof(EmptyFrame));
         }
 
         private void nvSample_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
@@ -46,7 +49,8 @@ namespace GeoGraph.Pages.MainPage
             switch (itemTag)
             {
                 case "MapPage":
-                    pageType = typeof(GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame);
+                    if(Assets._MapName!=null)
+                        pageType = typeof(GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame);
                     break;
                 case "SavePage":
                     pageType = typeof(SaveInfFrame);
@@ -54,8 +58,8 @@ namespace GeoGraph.Pages.MainPage
                 case "Settings":
                     pageType = typeof(SettingFrame);
                     break;
-                case "Refresh":
-                    Refresh_Click();
+                case "MapChoosePage":
+                    pageType = typeof(MapChooseFrame);
                     break;
             }
 

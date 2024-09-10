@@ -12,19 +12,14 @@
     <Grid>
         <NavigationView x:Name="nvSample" OpenPaneLength="150"
                     IsSettingsVisible="True"
-                    PaneTitle="任务选择"
                     ItemInvoked="nvSample_ItemInvoked">
 
             <NavigationView.MenuItems>
+                <NavigationViewItem Icon="Folder" Content="地图选择" Tag="MapChoosePage" />
                 <NavigationViewItem Icon="Play" Content="地图页面" Tag="MapPage" />
-                <NavigationViewItem Icon="Save" Content="保存文本" Tag="SavePage" />
-            </NavigationView.MenuItems>
+                <NavigationViewItem Icon="Save" Content="上传与保存" Tag="SavePage" />
 
-            <NavigationView.PaneFooter>
-                <StackPanel x:Name="FooterStackPanel" Orientation="Vertical" Visibility="Visible">
-                    <NavigationViewItem Icon="Refresh" Tag="Refresh" />
-                </StackPanel>
-            </NavigationView.PaneFooter>
+            </NavigationView.MenuItems>
 
             <Frame x:Name="MasterPageFrame"/>
         </NavigationView>

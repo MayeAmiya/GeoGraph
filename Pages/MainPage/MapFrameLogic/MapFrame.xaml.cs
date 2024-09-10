@@ -61,7 +61,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             MainCanvas.Width = Assets.MapInfWidth;
             MainCanvas.Height = Assets.MapInfHeight;
             // 初始化Map图像
-            BitmapImage bitmapImage = new BitmapImage(new Uri(Assets.newImagePath));
+            BitmapImage bitmapImage = new BitmapImage(new Uri(Assets.MapImagePath));
             Image.Source = bitmapImage;
             // 同时在Assets初始化PointInf和Update的数据 根据地图类型直接引用
             originalPositions = Assets._Basic_PointInf.basePoints;

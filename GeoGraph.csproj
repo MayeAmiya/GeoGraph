@@ -16,6 +16,8 @@
     <None Remove="Pages\Login\LoginPage.xaml" />
     <None Remove="Pages\Login\WaitingPage.xaml" />
     <None Remove="Pages\Login\WelcomePage.xaml" />
+    <None Remove="Pages\MainPage\EmptyFrame.xaml" />
+    <None Remove="Pages\MainPage\MapChooseFrame.xaml" />
     <None Remove="Pages\MainPage\MapFrame.xaml" />
     <None Remove="Pages\MainPage\MapFrameLogic\PointInfFrame.xaml" />
     <None Remove="Pages\MainPage\Master.xaml" />
@@ -94,6 +96,17 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\MainPage\MapFrameLogic\PointInfFrame.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomAdditionalCompileInputs Remove="Pages\MainPage\MapChooseFrame.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Remove="Pages\MainPage\MapChooseFrame.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\MainPage\EmptyFrame.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
