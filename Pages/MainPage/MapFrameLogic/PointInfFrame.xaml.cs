@@ -19,7 +19,7 @@ using static GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame;
 using static GeoGraph.Pages.MainPage.MapFrameLogic.PointInfFrame;
 
 using static GeoGraph.Network.PointInf;
-using static GeoGraph.Network.PointInfUpdate;
+using static GeoGraph.Network.Update;
 using System.Runtime.CompilerServices;
 using Windows.Devices.Enumeration;
 using Microsoft.UI.Xaml.Documents;
@@ -51,7 +51,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
 
         // 本组点信息
         static PointInf Basic_PointInf;
-        static PointInfUpdate Update_PointInf;
+        static Update Update_PointInf;
         static PointInfTemp Temp_PointInf;
         // 最重要的部分
         private Property find(int Index)
@@ -136,7 +136,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                         // 说明是一个图片 这里是图片名 我们需要下载图片并且在asset中找到他 暂且不做
                         string content = ItemNow.Object as string;
                         // 创建一个图像显示 缩放至合适大小 宽度为控件宽度
-                        string ImagePath = await Assets.FindImage(content);
+                        string ImagePath = Assets.FindImage(content);
                         Image image = new Image
                         {
                             Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(content)),

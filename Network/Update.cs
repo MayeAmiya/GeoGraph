@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static GeoGraph.Pages.MainPage.MapChooseFrame;
 
 namespace GeoGraph.Network
 {
     // 这里存储本次登录所作过更改的点信息 用于更新 更新时搜索PointInf标记Updated
     // 搜索时优先搜索PointInfUpdate 找不到再搜索PointInf
-    public class PointInfUpdate
+    public class Update
     {
         private PointInf _pointinf;
 
-        public PointInfUpdate(PointInf pointinf)
+        public Update(PointInf pointinf)
         {
             _pointinf = pointinf;
             Update_basicInfo = new Dictionary<int, Property>();
@@ -89,5 +90,14 @@ namespace GeoGraph.Network
             }
         }
 
+        public static void Upload(string RequestObject)
+        {
+            return;
+        }
+
+        public static void UpdateMap(MapInfo update)
+        {
+            return;
+        }
     }
 }

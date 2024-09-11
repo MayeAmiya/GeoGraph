@@ -45,11 +45,16 @@ namespace GeoGraph
             m_window.Activate();
         }
 
-        private Window m_window;
+        private static Window m_window;
         public static Frame MainFrame { get; set; }
         public static string _IP = "localhost";
         public static int _Port = 0721;
         public static int _MaxreconnectTime = 5000;
         public static int _MaxreconnectTimes = 3;
+
+        public static Window GetWindow()
+        {
+            return App.m_window;
+        }
     }
 }

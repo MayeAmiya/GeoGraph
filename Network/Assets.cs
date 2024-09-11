@@ -23,7 +23,7 @@ namespace GeoGraph.Network
         public static bool AssetsReady = false;
 
         public static PointInf _Basic_PointInf;
-        public static PointInfUpdate _Update_PointInf;
+        public static Update _Update_PointInf;
         public static PointInfTemp _Temp_PointInf;
 
         private static NetworkClient _client;
@@ -34,15 +34,24 @@ namespace GeoGraph.Network
         }
 
         // 获取地图信息
-        public static  void ParseMapInfAsync()
+        public static void ParseMapInfAsync()
         {
             // 设置资源准备完毕
             AssetsReady = true;
             // 初始化点信息
-            PointInf _Basic_PointInf = new PointInf(_MapName);
-            PointInfUpdate _Update_PointInf = new PointInfUpdate(_Basic_PointInf);
-            PointInfTemp _Temp_PointInf = new PointInfTemp(_Basic_PointInf);
             List<MapInfo>MapList = new List<MapInfo>();
+            if(MapList is null)
+            {
+                System.Diagnostics.Debug.WriteLine("MapList is null");
+            }
+        }
+
+        public static void GetPoints()
+        {
+            PointInf _Basic_PointInf = new PointInf(_MapName);
+            Update _Update_PointInf = new Update(_Basic_PointInf);
+            PointInfTemp _Temp_PointInf = new PointInfTemp(_Basic_PointInf);
+
         }
 
         public static async void GetMapList()
@@ -67,16 +76,19 @@ namespace GeoGraph.Network
                 // 获取地图长宽
                 int Width = map.GetProperty("Width").GetInt32();
                 int Height = map.GetProperty("Height").GetInt32();
+
+                int mapCode = map.GetProperty("MapCode").GetInt32();
                 // 添加入列表
-                MapList.Add(new MapInfo { MapName = mapName, Width = Width, Height = Height, ImagePath = mapImage, MapInf = mapInf });
+                MapList.Add(new MapInfo (mapName, Width, Height, mapImage, mapInf ,mapCode));
             }
         }
-        public static async void Download(string RequestObject)
+
+        public static void Download(string RequestObject)
         {
             return;
         }
 
-        public static async Task<string> FindImage(string ImageName)
+        public static string FindImage(string ImageName)
         {
             Download(ImageName);
             string ImagePath = null; //!!!

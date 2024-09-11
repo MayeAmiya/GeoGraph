@@ -29,6 +29,7 @@ namespace GeoGraph
     {
         public static GeoGraph.Network.NetworkClient _NetworkClient;
         public static GeoGraph.Network.Connect _Connect;
+        public static GeoGraph.Network.Assets _Assets;
 
         public MainWindow()
         {
@@ -36,7 +37,7 @@ namespace GeoGraph
             //初始化网络客户端
             // 后端未完成 _NetworkClient = new GeoGraph.Network.NetworkClient();
             App.MainFrame = this.MainFrame;
-
+            _Assets = new GeoGraph.Network.Assets();
             MainWindow.NavigateTo(typeof(GeoGraph.Pages.Login.WaitingPage));
         }
 

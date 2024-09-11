@@ -26,6 +26,7 @@ namespace GeoGraph.Pages.MainPage
     /// </summary>
     public sealed partial class Master : Page
     {
+
         public Master()
         {
             this.InitializeComponent();
@@ -69,6 +70,7 @@ namespace GeoGraph.Pages.MainPage
             }
 
         }
+
         private void Refresh_Click()
         {
             // refresh the map

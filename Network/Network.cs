@@ -30,6 +30,7 @@ namespace GeoGraph.Network
             _ = ConnectAsync(App._IP, App._Port);
         }
 
+
         private async Task<bool> ConnectAsync(string ipAddress, int port)
         {
             try

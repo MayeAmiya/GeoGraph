@@ -12,9 +12,9 @@
     <Grid>
         <!-- 定义两列布局 -->
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*" />
-            <!-- 左侧ListView -->
             <ColumnDefinition Width="*" />
+            <!-- 左侧ListView -->
+            <ColumnDefinition Width="2*" />
             <!-- 右侧内容面板 -->
         </Grid.ColumnDefinitions>
 
@@ -36,29 +36,12 @@
         OpenPaneLength="300">
 
             <!-- Pane 显示图片和详细信息 -->
-            <StackPanel Margin="20">
-                <!-- MapName TextBox -->
-                <TextBlock Text="Map Name" FontSize="18" FontWeight="Bold" />
-                <TextBox Text="{x:Bind MapName, Mode=TwoWay}" Width="300" Margin="5"/>
 
-                <!-- Width TextBox -->
-                <TextBlock Text="Width" FontSize="18" FontWeight="Bold" />
-                <TextBox Text="{x:Bind Width, Mode=TwoWay}" Width="300" Margin="5"/>
-
-                <!-- Height TextBox -->
-                <TextBlock Text="Height" FontSize="18" FontWeight="Bold" />
-                <TextBox Text="{x:Bind Height, Mode=TwoWay}" Width="300" Margin="5"/>
-
-                <!-- MapInf TextBox -->
-                <TextBlock Text="Map Information" FontSize="18" FontWeight="Bold" />
-                <TextBox Text="{x:Bind MapInfo, Mode=TwoWay}" Width="300" Margin="5"/>
-
-                <!-- Save and Delete Buttons -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
-                    <Button Content="Save" Click="SaveButton_Click" Width="100" Margin="5"/>
-                    <Button Content="Delete" Click="DeleteButton_Click" Width="100" Margin="5"/>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel x:Name="MapListViewInf" Margin="20">
+                    <!-- Save and Delete Buttons -->
                 </StackPanel>
-            </StackPanel>
+            </ScrollViewer>
         </SplitView>
     </Grid>
 </Page>

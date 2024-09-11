@@ -28,6 +28,8 @@ namespace GeoGraph.Pages.MainPage
         public EmptyFrame()
         {
             this.InitializeComponent();
+
+            System.Diagnostics.Debug.WriteLine("EmptyHere");
         }
 
         void GetUser()
