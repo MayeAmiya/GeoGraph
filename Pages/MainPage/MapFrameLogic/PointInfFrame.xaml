@@ -12,24 +12,35 @@
     <Grid>
         <!-- 定义两行，一行放导航，一行放数据 -->
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <!-- 导航框，自动高度 -->
-            <RowDefinition Height="*" />
-            <!-- 数据框，占据剩余空间 -->
             <RowDefinition Height="Auto" />
+            
+            
+            <!-- 分隔线，自动高度 -->
+            <RowDefinition Height="Auto" />
+            
+            <!-- 数据框，占据剩余空间 -->
+            <RowDefinition Height="*" />
+            
+            
+            <!-- 分隔线，自动高度 -->
+            <RowDefinition Height="Auto" />
+            
             <!-- 处理框，自动高度 -->
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- 导航区域 -->
         <ScrollViewer x:Name="NavigationScrollViewer" Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <StackPanel x:Name="NavigationStackPanel" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
                 
-                
             </StackPanel>
         </ScrollViewer>
 
+        <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="0,1,0,0" />
+
         <!-- 数据显示区域 -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
             <StackPanel x:Name="Information" Orientation="Vertical" VerticalAlignment="Top" Margin="10,10,10,10">
                 <!-- 数据行 -->
                 <!-- 添加更多数据行 -->
@@ -37,9 +48,12 @@
             </StackPanel>
         </ScrollViewer>
 
+        <Border Grid.Row="3" BorderBrush="LightGray" BorderThickness="0,1,0,0" />
+        
         <!-- 处理决策区域 -->
-        <Button Content="保存" Click="SavePoint_Click" />
-        <Button Content="放弃" Click="DeletePoint_Click" />
-        <Button Content="删除" Click="AbrotPoint_Clock" />
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+            <Button Content="保存" Click="SavePoint_Click" Margin="0,0,80,0" />
+            <Button Content="放弃" Click="AbrotPoint_Clock" Margin="10,0,0,0" />
+        </StackPanel>
     </Grid>
 </Page>

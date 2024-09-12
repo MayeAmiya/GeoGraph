@@ -33,48 +33,43 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
 
             this.InitializeMap();
 
-            this.InitializePointInfPane();
+            this.RightPaneFrame.Navigate(typeof(GeoGraph.Pages.MainPage.MapFrameLogic.PointInfFrame));
 
+            pointInfFramePage = this.RightPaneFrame.Content as GeoGraph.Pages.MainPage.MapFrameLogic.PointInfFrame;
         }
         // 基本点信息
 
         // 该考虑点预载信息了 这部分在初始化时自动完成
-
+        GeoGraph.Pages.MainPage.MapFrameLogic.PointInfFrame pointInfFramePage;
         private List<BasePoint> originalPositions;
         // 需要一个字典将pointInf与点的信息对应起来 
 
         // 上一个拖动的点和当前选择的点
-        private Ellipse _selectedPoint;
+        private static Ellipse _selectedPoint;
         private Point _lastPointerPosition;
 
         private static bool _isDragging;
         private static double _currentScale = 1.0;
 
         private const double ScaleStep = 0.1;
-        private const double MaxScale = 5.0;
-        private const double MinScale = 1.0;
+        private const double MaxScale = 5.00;
+        private const double MinScale = 0.05;
 
 
         private void InitializeMap()
         {
             // 初始化Canvas大小
-            MainCanvas.Width = Assets.MapInfWidth;
-            MainCanvas.Height = Assets.MapInfHeight;
+            MainCanvas.Width = Assets._MapInfo.Width;
+            MainCanvas.Height = Assets._MapInfo.Height;
             // 初始化Map图像
-            BitmapImage bitmapImage = new BitmapImage(new Uri(Assets.MapImagePath));
+            BitmapImage bitmapImage = new BitmapImage(new Uri(Assets._MapInfo.ImagePath));
             Image.Source = bitmapImage;
             // 同时在Assets初始化PointInf和Update的数据 根据地图类型直接引用
             originalPositions = Assets._Basic_PointInf.basePoints;
         }
 
-        private void InitializePointInfPane()
-        {
-            // 重定向到PointInfFrame
-            RightPaneFrame.Navigate(typeof(GeoGraph.Pages.MainPage.MapFrameLogic.PointInfFrame));
-        }
 
-
-        private void CreateEllipse(BasePoint position)
+        private Ellipse CreateEllipse(BasePoint position)
         {
             // 建立新点
             Ellipse ellipse = new Ellipse
@@ -91,6 +86,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             ellipse.Tapped += OnEllipseTapped;
             // 添加到画布 
             MainCanvas.Children.Add(ellipse);
+            return ellipse;
         }
 
         // 移动画面
@@ -121,11 +117,24 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             // 获取鼠标点击的指针属性
             var pointerProperties = e.GetCurrentPoint(null).Properties;
             // 右键拖动地图 左键选择，创建，取消
-            if (_selectedPoint != null)
+
+            //如果是左键 那么取消选择点
+            if (!pointerProperties.IsLeftButtonPressed)
             {
-                //如果是左键 那么取消选择点
-                if (pointerProperties.IsLeftButtonPressed)
+                //如果是右键那就是拖动逻辑
+                MainSplitView.IsPaneOpen = false;
+                _lastPointerPosition = e.GetCurrentPoint(MainCanvas).Position;
+                    _isDragging = true;
+                    MainCanvas.CapturePointer(e.Pointer);
+                
+            }
+            // 如果此时没有选中点 则创建点
+            else
+            {
+                if (_selectedPoint != null)
                 {
+                    //如果是左键 那么取消选择点
+
                     //如果是暂时点 那么从画布中删除
                     if (((BasePoint)_selectedPoint.Tag).isTemp)
                     {
@@ -138,24 +147,18 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                         _selectedPoint = null;
                     }
                 }
-                else
-                {
-                    //如果是右键那就是拖动逻辑
-                    _lastPointerPosition = e.GetCurrentPoint(MainCanvas).Position;
-                    _isDragging = true;
-                    MainCanvas.CapturePointer(e.Pointer);
-                }
-            }
-            // 如果此时没有选中点 则创建点
-            else
-            {
+
                 //读取此时鼠标点击的位置 注意这个位置相对画布实际的位置
                 BasePoint temp = new BasePoint(e.GetCurrentPoint(MainCanvas).Position,-1)
                 {
                     //这个Position要作变换
                     isTemp = true
                 };
-                CreateEllipse(temp);
+
+                _selectedPoint = CreateEllipse(temp);
+                OnEllipseTapped(_selectedPoint, null);
+                PointInfFrame.Temp_PointInf.newPoint(temp);
+                pointInfFramePage.refreshPage(temp.pointInfCode);
             }
 
         }
@@ -184,27 +187,45 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
         // 选中点 这里不好 创建点应用点创建工具 而不是鼠标右键点击
         private void OnEllipseTapped(object sender, TappedRoutedEventArgs e)
         {
+            // 本来设了创建工具选择还没上 这里默认都是创建点了
             Ellipse tappedEllipse = sender as Ellipse;
 
             // 如果已经有选中的点，将其恢复为未选中状态
             if (_selectedPoint != null)
             {
-                _selectedPoint.Fill = new SolidColorBrush(Microsoft.UI.Colors.Red);
-                _selectedPoint = null;
+                if(_selectedPoint != tappedEllipse)
+                {
+                    // 清空暂时点数据
+                    pointInfFramePage.PaneClear();
+                    PointInfFrame.Temp_PointInf.clear();
+                    // 如果是暂时点 那么从画布中删除
+                    if (((BasePoint)_selectedPoint.Tag).isTemp)
+                    {
+                        MainCanvas.Children.Remove(_selectedPoint);
+                        _selectedPoint = null;
+                    }
+                    //如果是永久点 那么取消选择
+                    else
+                    {
+                        PointInfFrame.Temp_PointInf.clear();
+                        _selectedPoint.Fill = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                        _selectedPoint = null;
+                    }
+                }
             }
 
             // 将点击的点设置为选中状态，并且为temp点
             _selectedPoint = tappedEllipse;
             _selectedPoint.Fill = new SolidColorBrush(Microsoft.UI.Colors.Blue);
-            // C#的赋值都是引用赋值 所以这里直接强转类型然后改就行
-            ((BasePoint)_selectedPoint.Tag).isTemp = true;
+            // C#的class 一般都是引用 所以这里直接强转类型然后改就行
 
+            MainSplitView.IsPaneOpen = true;
         }
 
-        public BasePoint pointInfSelect()
+        public static BasePoint pointInfSelect()
         {
-            if(this._selectedPoint != null)
-                return ((BasePoint)this._selectedPoint.Tag);
+            if(_selectedPoint != null)
+                return ((BasePoint)_selectedPoint.Tag);
             else
                 return null;
         }

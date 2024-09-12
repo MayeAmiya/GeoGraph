@@ -33,6 +33,7 @@
                 </Canvas>
             </SplitView.Content>
 
+            <!-- 默认收起-->
             <SplitView.Pane>
                 <Frame x:Name="RightPaneFrame"/>
             </SplitView.Pane>

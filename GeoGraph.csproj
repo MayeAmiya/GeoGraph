@@ -14,7 +14,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Pages\Login\LoginPage.xaml" />
-    <None Remove="Pages\Login\WaitingPage.xaml" />
     <None Remove="Pages\Login\WelcomePage.xaml" />
     <None Remove="Pages\MainPage\EmptyFrame.xaml" />
     <None Remove="Pages\MainPage\MapChooseFrame.xaml" />
@@ -88,12 +87,6 @@
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
-  <ItemGroup>
-    <CustomAdditionalCompileInputs Remove="Pages\Login\WaitingPage.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Remove="Pages\Login\WaitingPage.xaml" />
-  </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\MainPage\MapFrameLogic\PointInfFrame.xaml">
       <Generator>MSBuild:Compile</Generator>

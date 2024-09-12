@@ -45,7 +45,9 @@ namespace GeoGraph
             m_window.Activate();
         }
 
-        private static Window m_window;
+        public static Window m_window;
+        public static Frame m_mainFrame;
+
         public static Frame MainFrame { get; set; }
         public static string _IP = "localhost";
         public static int _Port = 0721;

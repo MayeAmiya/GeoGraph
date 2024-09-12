@@ -1,4 +1,5 @@
 using GeoGraph.Network;
+using GeoGraph.Pages.MainPage.MapFrameLogic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -67,7 +68,6 @@ namespace GeoGraph.Pages.MainPage
         }
 
         List<MapInfo> mapinfos;
-        MapInfo MapChoosedNow;
 
         public MapChooseFrame()
         {
@@ -103,31 +103,62 @@ namespace GeoGraph.Pages.MainPage
                 foreach (var map in mapinfos)
                 {
                     // 创建地图项
-                    TextBlock textBlockName = new TextBlock
+                    ListViewItem item;
+                    StackPanel stackPanel;
+                    if (map.MapName is not null)
                     {
-                        Text = map.MapName,
-                        FontSize = 16, // 设置字体大小
-                        Margin = new Microsoft.UI.Xaml.Thickness(5)
-                    };
-                    TextBlock textBlockSize = new TextBlock
+                        TextBlock textBlockName = new TextBlock
+                        {
+                            Text = map.MapName,
+                            FontSize = 16, // 设置字体大小
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
+                        TextBlock textBlockSize = new TextBlock
+                        {
+                            Text = "Size = " + map.Width.ToString() + " x " + map.Height.ToString(),
+                            FontSize = 16, // 设置字体大小
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
+
+                        stackPanel = new StackPanel
+                        {
+                            Orientation = Orientation.Vertical, // 垂直排列
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
+
+                        // 将 TextBlock 添加到 StackPanel 中
+                        stackPanel.Children.Add(textBlockName);
+                        stackPanel.Children.Add(textBlockSize);
+                        // 再添加一个选中时返回mapinfo对象的回调
+                    }
+                    else
                     {
-                        Text = map.Width.ToString() + " " + map.Height.ToString(),
-                        FontSize = 16, // 设置字体大小
-                        Margin = new Microsoft.UI.Xaml.Thickness(5)
-                    };
+                        TextBlock textBlockName = new TextBlock
+                        {
+                            Text = "New Map",
+                            FontSize = 16, // 设置字体大小
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
 
-                    StackPanel stackPanel = new StackPanel
-                    {
-                        Orientation = Orientation.Vertical, // 垂直排列
-                        Margin = new Microsoft.UI.Xaml.Thickness(5)
-                    };
+                        TextBlock textBlockEmpty = new TextBlock
+                        {
+                            Text = "    waiting for input",
+                            FontSize = 16, // 设置字体大小
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
 
-                    // 将 TextBlock 添加到 StackPanel 中
-                    stackPanel.Children.Add(textBlockName);
-                    stackPanel.Children.Add(textBlockSize);
-                    // 再添加一个选中时返回mapinfo对象的回调
+                        stackPanel = new StackPanel
+                        {
+                            Orientation = Orientation.Vertical, // 垂直排列
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
 
-                    ListViewItem item = new ListViewItem()
+                        // 将 TextBlock 添加到 StackPanel 中
+                        stackPanel.Children.Add(textBlockName);
+                        stackPanel.Children.Add(textBlockEmpty);
+                    }
+
+                    item = new ListViewItem()
                     {
                         Content = stackPanel,
                         Tag = map
@@ -137,17 +168,32 @@ namespace GeoGraph.Pages.MainPage
                 }
             }
             
-            TextBlock textBlockNew = new TextBlock
+            TextBlock BlockNew = new TextBlock
             {
                 Text = "NewMap Create",
                 FontSize = 16, // 设置字体大小
                 Margin = new Microsoft.UI.Xaml.Thickness(5)
             };
 
+            TextBlock BlockEmpty = new TextBlock
+            {
+                Text = "    check to create new map",
+                FontSize = 16, // 设置字体大小
+                Margin = new Microsoft.UI.Xaml.Thickness(5)
+            };
+
+            StackPanel Panel = new StackPanel
+            {
+                Orientation = Orientation.Vertical, // 垂直排列
+                Margin = new Microsoft.UI.Xaml.Thickness(5)
+            };
+
+            Panel.Children.Add(BlockNew);
+            Panel.Children.Add(BlockEmpty);
 
             ListViewItem itemAdd = new ListViewItem
             {
-                Content = textBlockNew
+                Content = Panel
             };
 
             itemAdd.Tapped += AddButton_Click;
@@ -256,7 +302,8 @@ namespace GeoGraph.Pages.MainPage
                         {
                             Text = mapInfotemp.MapInf,
                             FontSize = 16, // 设置字体大小
-                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                            Margin = new Microsoft.UI.Xaml.Thickness(5),
+                            AcceptsReturn = true, // 允许回车换行
                         };
 
                         Button imageButton = new Button
@@ -355,6 +402,8 @@ namespace GeoGraph.Pages.MainPage
                                     mapinfos.Remove(selectedMap);
                                     GeoGraph.Network.Update.UpdateMap(mapInfotemp);
                                     InitializeMapListView();
+                                    MapListView_SelectionChanged(selectedItem, null);
+                                    MapChoosed(mapInfotemp);
                                 }
                             }
                         };
@@ -424,7 +473,8 @@ namespace GeoGraph.Pages.MainPage
                         {
                             Text = mapInfotemp.MapInf,
                             FontSize = 16, // 设置字体大小
-                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                            Margin = new Microsoft.UI.Xaml.Thickness(5),
+                            AcceptsReturn = true, // 允许回车换行
                         };
 
                         StackPanel stackPanelImage = new StackPanel
@@ -478,11 +528,7 @@ namespace GeoGraph.Pages.MainPage
                             InitializeMapListView();
                         };
 
-                        chooseButton.Click += (sender, e) =>
-                        {
-                            MapChoosedNow = mapInfotemp;
-                            MapChoosed();
-                        };
+                        chooseButton.Click += (sender, e) => MapChoosed(selectedMap);
 
                         // StackPanel 添加到布局中
                         MapListViewInf.Children.Add(stackPanelImage);
@@ -495,14 +541,16 @@ namespace GeoGraph.Pages.MainPage
 
                     }
                 }
-
             }
         }
 
 
-        public void MapChoosed()
+        public void MapChoosed(MapInfo MapChoosedNow)
         {
-            Assets.GetPoints();
+            Assets.GetPoints(MapChoosedNow);
+
+            // 取得初始点集 建立 初始点集 更新点集 暂存点 
+            Master.NavigateTo(typeof(GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame));
         }
     }
 }

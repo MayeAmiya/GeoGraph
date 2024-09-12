@@ -15,7 +15,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace GeoGraph.Network
 {
     // 设置属性类型
-    public struct Property
+    public class Property
     {
         public string Name { get; set; }
         public int Index { get; set; }
@@ -35,11 +35,31 @@ namespace GeoGraph.Network
             Type = type;
             Object = obj;
             date = DateTime.Now.ToString();
+            IndexUpdate();
         }
         
         public void dateUpdate()
         {
             date = DateTime.Now.ToString();
+        }
+
+        public override int GetHashCode()
+        {
+            // 使用质数 17 和 31 开始（这些质数常用于哈希计算）
+            int hash = 17;
+
+            // 加上每个字段的哈希码
+            hash = hash * 31 + (Name != null ? Name.GetHashCode() : 0);
+            hash = hash * 31 + (Type != null ? Type.GetHashCode() : 0);
+            hash = hash * 31 + (date != null ? date.GetHashCode() : 0);
+
+            return hash;
+        }
+
+        public void IndexUpdate()
+        {
+            this.dateUpdate();
+            this.Index = Guid.NewGuid().GetHashCode()^this.GetHashCode();
         }
     }
 
@@ -83,10 +103,10 @@ namespace GeoGraph.Network
 
             MapName = mapname;
             basePoints = new List<BasePoint>();
-            ParsePointInfAsync();
 
             basicInfo = new Dictionary<int, Property>();
-
+            EnumInfo = new Dictionary<string, Property>();
+            PageInfo = new Dictionary<string, Property>();
         }
         // 点信息列表
         public List<BasePoint> basePoints;
@@ -101,7 +121,10 @@ namespace GeoGraph.Network
             //是一个Json 包含一大堆数据 有普通数据类型 也可能是列表
             //对于字符串 整数 浮点数 可以认为是单个量
             //而对于列表和枚举 就需要递归处理
-
+            if(_client == null)
+            {
+                return;
+            }
             //这里我们假设服务器返回的是一个Json字符串
             string MainPoints = await _client.SendMessageAsync("Points");
             //Point组成是Primary主键 有name 
@@ -237,10 +260,14 @@ namespace GeoGraph.Network
     {
         private PointInf _pointinf;
         private Property Temp_Page;
+        public BasePoint Temp_Point;
         public PointInfTemp(PointInf pointinf)
         {
             _pointinf = pointinf;
             Temp_basicInfo = new Dictionary<int, Property>();
+            Temp_EnumInfo = new Dictionary<string, Property>();
+            Temp_PageInfo = new Dictionary<string, Property>();
+
         }
         // 用于UpdatePointInf的更新
         public Dictionary<int, Property> GET_Temp_basicInfo()
@@ -258,6 +285,8 @@ namespace GeoGraph.Network
             Temp_basicInfo.Clear();
             Temp_EnumInfo.Clear();
             Temp_PageInfo.Clear();
+            Temp_Page = null;
+            Temp_Point = null;
         }
 
         // 删除点信息
@@ -282,6 +311,24 @@ namespace GeoGraph.Network
         }
 
         // 增加点信息
+        public void newPoint(BasePoint temp)
+        {
+            Temp_Point = temp;
+            // newPage
+            Property new_Page = new Property
+            (
+                null,
+                -1,
+                "Page",
+                new List<int>()
+            );
+
+            new_Page.IndexUpdate();
+            temp.pointInfCode = new_Page.Index;
+
+            Temp_basicInfo.Add(new_Page.Index, new_Page);
+        }
+
         public Property newItem(string name, string type, string info)
         {
             int hashcode = name.GetHashCode()^type.GetHashCode()^info.GetHashCode()+DateTime.Now.TimeOfDay.GetHashCode();
@@ -301,12 +348,12 @@ namespace GeoGraph.Network
             if(!Temp_basicInfo.ContainsKey(pageindex))
             {            
                 Temp_Page = new Property
-                {
-                    Name = _pointinf.basicInfo[pageindex].Name,
-                    Index = _pointinf.basicInfo[pageindex].Index,
-                    Type = _pointinf.basicInfo[pageindex].Type,
-                    Object = new List<int> ((List<int>)_pointinf.basicInfo[pageindex].Object)
-                };
+                (
+                    _pointinf.basicInfo[pageindex].Name,
+                     _pointinf.basicInfo[pageindex].Index,
+                    _pointinf.basicInfo[pageindex].Type,
+                    new List<int> ((List<int>)_pointinf.basicInfo[pageindex].Object)
+                );
                 Temp_basicInfo.Add(Temp_Page.Index, Temp_Page);
                 Temp_PageInfo.Add(Temp_Page.Name, Temp_Page);
             }
@@ -324,12 +371,12 @@ namespace GeoGraph.Network
             if (!Temp_basicInfo.ContainsKey(enumindex))
             {
                 Temp_Enum = new Property
-                {
-                    Name = _pointinf.basicInfo[enumindex].Name,
-                    Index = _pointinf.basicInfo[enumindex].Index,
-                    Type = _pointinf.basicInfo[enumindex].Type,
-                    Object = new List<int>((List<int>)_pointinf.basicInfo[enumindex].Object)
-                };
+                (
+                    _pointinf.basicInfo[enumindex].Name,
+                     _pointinf.basicInfo[enumindex].Index,
+                    _pointinf.basicInfo[enumindex].Type,
+                    new List<int>((List<int>)_pointinf.basicInfo[enumindex].Object)
+                );
                 Temp_basicInfo.Add(Temp_Page.Index, Temp_Page);
                 Temp_EnumInfo.Add(Temp_Page.Name, Temp_Page);
             }

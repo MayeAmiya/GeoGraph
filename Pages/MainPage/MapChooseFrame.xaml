@@ -19,12 +19,12 @@
         </Grid.ColumnDefinitions>
 
         <!-- 左侧 ListView 区域 -->
-        <StackPanel Grid.Column="0" Margin="10">
+        
             <!-- ListView 显示地图列表 -->
-            <ListView x:Name="MapListView" Margin="10" SelectionChanged="MapListView_SelectionChanged">
+        <ListView Grid.Column="0" x:Name="MapListView" Margin="10" SelectionChanged="MapListView_SelectionChanged">
                 <!-- 示例数据项 -->
-            </ListView>
-        </StackPanel>
+        </ListView>
+        
 
         <!-- 右侧内容划出面板 -->
         <SplitView 

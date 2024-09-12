@@ -31,6 +31,7 @@ namespace GeoGraph.Pages.MainPage
         {
             this.InitializeComponent();
             System.Diagnostics.Debug.WriteLine("MasterHere");
+            App.m_mainFrame = MasterPageFrame;
             MasterPageFrame.Navigate(typeof(EmptyFrame));
         }
 
@@ -50,7 +51,7 @@ namespace GeoGraph.Pages.MainPage
             switch (itemTag)
             {
                 case "MapPage":
-                    if(Assets._MapName!=null)
+                    if(Assets._MapInfo?.MapName != null)
                         pageType = typeof(GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame);
                     break;
                 case "SavePage":
@@ -74,6 +75,11 @@ namespace GeoGraph.Pages.MainPage
         private void Refresh_Click()
         {
             // refresh the map
+        }
+
+        public static void NavigateTo(System.Type page)
+        {
+            App.m_mainFrame.Navigate(page);
         }
     }
 }

@@ -13,10 +13,7 @@ namespace GeoGraph.Network
 {
     public class Assets
     {
-        public static string _MapName;
-        public static int MapInfWidth;
-        public static int MapInfHeight;
-        public static string MapImagePath;
+        public static MapInfo _MapInfo;
 
         public static List<MapInfo> MapList;
 
@@ -46,11 +43,13 @@ namespace GeoGraph.Network
             }
         }
 
-        public static void GetPoints()
+        public static void GetPoints(MapInfo MapChoosedNow)
         {
-            PointInf _Basic_PointInf = new PointInf(_MapName);
-            Update _Update_PointInf = new Update(_Basic_PointInf);
-            PointInfTemp _Temp_PointInf = new PointInfTemp(_Basic_PointInf);
+            _MapInfo = MapChoosedNow;
+            _Basic_PointInf = new PointInf(_MapInfo.MapName);
+            // 现在没网 就不通过网络初始化了 _Basic_PointInf.ParsePointInfAsync();
+            _Update_PointInf = new Update(_Basic_PointInf);
+            _Temp_PointInf = new PointInfTemp(_Basic_PointInf);
 
         }
 

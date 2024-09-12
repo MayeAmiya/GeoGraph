@@ -34,11 +34,14 @@ namespace GeoGraph
         public MainWindow()
         {
             this.InitializeComponent();
-            //初始化网络客户端
-            // 后端未完成 _NetworkClient = new GeoGraph.Network.NetworkClient();
+            // 设置主页面指向
             App.MainFrame = this.MainFrame;
+
+            // 后端未完成 _NetworkClient = new GeoGraph.Network.NetworkClient();
+            // 初始化资源
             _Assets = new GeoGraph.Network.Assets();
-            MainWindow.NavigateTo(typeof(GeoGraph.Pages.Login.WaitingPage));
+            // 导航到初始化页面
+            MainWindow.NavigateTo(typeof(GeoGraph.Pages.Login.LoginPage));
         }
 
         public static void NavigateTo(System.Type page)

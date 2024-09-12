@@ -16,14 +16,14 @@ namespace GeoGraph.Network
         public Update(PointInf pointinf)
         {
             _pointinf = pointinf;
-            Update_basicInfo = new Dictionary<int, Property>();
-        }
-        private Dictionary<int, Property> Temp_basicInfo;
 
-        public void bindTemp(PointInfTemp temp)
-        {
-            Temp_basicInfo = temp.GET_Temp_basicInfo();
+            Update_basePoints = new List<BasePoint>();
+            Update_basicInfo = new Dictionary<int, Property>();
+            Update_EnumInfo = new Dictionary<string, Property>();
+            Update_PageInfo = new Dictionary<string, Property>();
         }
+
+
         public Dictionary<int, Property> Update_basicInfo; // 以数据库结构存储 自己找到自己的位置
         public Dictionary<string, Property> Update_EnumInfo;
         public Dictionary<string, Property> Update_PageInfo;
@@ -58,9 +58,9 @@ namespace GeoGraph.Network
 
         // 合并更改的点信息 合并到已更改列表
         // 好了 已更改列表更改的对象是不同于原表的
-        public void merge()
+        public void merge(PointInfTemp temp)
         {
-            foreach (var item in Temp_basicInfo)
+            foreach (var item in temp.Temp_basicInfo)
             {
                 if (_pointinf.basicInfo.ContainsKey(item.Key))
                 {
@@ -88,6 +88,8 @@ namespace GeoGraph.Network
                     // 然后还要更新一下
                 }
             }
+            // 上传基点
+            Update_basePoints.Add(temp.Temp_Point);
         }
 
         public static void Upload(string RequestObject)
