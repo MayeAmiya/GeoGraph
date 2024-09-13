@@ -36,6 +36,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             this.RightPaneFrame.Navigate(typeof(GeoGraph.Pages.MainPage.MapFrameLogic.PointInfFrame));
 
             pointInfFramePage = this.RightPaneFrame.Content as GeoGraph.Pages.MainPage.MapFrameLogic.PointInfFrame;
+            pointInfFramePage.GetMapFrame(this);
         }
         // 基本点信息
 
@@ -124,41 +125,37 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 //如果是右键那就是拖动逻辑
                 MainSplitView.IsPaneOpen = false;
                 _lastPointerPosition = e.GetCurrentPoint(MainCanvas).Position;
-                    _isDragging = true;
-                    MainCanvas.CapturePointer(e.Pointer);
+                _isDragging = true;
+                MainCanvas.CapturePointer(e.Pointer);
                 
             }
-            // 如果此时没有选中点 则创建点
+            
             else
             {
-                if (_selectedPoint != null)
+                if(sender is Ellipse)
                 {
-                    //如果是左键 那么取消选择点
-
-                    //如果是暂时点 那么从画布中删除
-                    if (((BasePoint)_selectedPoint.Tag).isTemp)
-                    {
-                        MainCanvas.Children.Remove(_selectedPoint);
-                    }
-                    //如果是永久点 那么取消选择
-                    else
-                    {
-                        _selectedPoint.Fill = new SolidColorBrush(Microsoft.UI.Colors.Red);
-                        _selectedPoint = null;
-                    }
+                    _selectedPoint = sender as Ellipse;
+                    OnEllipseTapped(_selectedPoint, null);
+                    pointInfFramePage.refreshPage(pointInfSelect().pointInfCode);
                 }
-
-                //读取此时鼠标点击的位置 注意这个位置相对画布实际的位置
-                BasePoint temp = new BasePoint(e.GetCurrentPoint(MainCanvas).Position,-1)
+                else
                 {
-                    //这个Position要作变换
-                    isTemp = true
-                };
+                    // 如果此时没有选中点 则创建点
+                    // 释放原有选择点
+                    releasePoint();
 
-                _selectedPoint = CreateEllipse(temp);
-                OnEllipseTapped(_selectedPoint, null);
-                PointInfFrame.Temp_PointInf.newPoint(temp);
-                pointInfFramePage.refreshPage(temp.pointInfCode);
+                    //读取此时鼠标点击的位置 注意这个位置相对画布实际的位置
+                    BasePoint temp = new BasePoint(e.GetCurrentPoint(MainCanvas).Position, -1)
+                    {
+                        //这个Position要作变换
+                        isTemp = true
+                    };
+
+                    _selectedPoint = CreateEllipse(temp);
+                    OnEllipseTapped(_selectedPoint, null);
+                    PointInfFrame.Temp_PointInf.newPoint(temp);
+                    pointInfFramePage.refreshPage(temp.pointInfCode);
+                }
             }
 
         }
@@ -214,7 +211,6 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 }
             }
 
-            // 将点击的点设置为选中状态，并且为temp点
             _selectedPoint = tappedEllipse;
             _selectedPoint.Fill = new SolidColorBrush(Microsoft.UI.Colors.Blue);
             // C#的class 一般都是引用 所以这里直接强转类型然后改就行
@@ -228,6 +224,54 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 return ((BasePoint)_selectedPoint.Tag);
             else
                 return null;
+        }
+
+        public void paneExp()
+        {
+            if(MainSplitView.OpenPaneLength == 400)
+            {
+                MainSplitView.OpenPaneLength = 800;
+            }
+            else
+            {
+                MainSplitView.OpenPaneLength = 400;
+            }
+
+        }
+
+        public void releasePoint()
+        {
+            if (_selectedPoint != null)
+            {
+                //如果是暂时点 那么从画布中删除
+                if (((BasePoint)_selectedPoint.Tag).isTemp)
+                {
+                    MainCanvas.Children.Remove(_selectedPoint);
+                }
+                //如果是永久点 那么取消选择
+                else
+                {
+                    _selectedPoint.Fill = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                }
+                _selectedPoint = null;
+            }
+        }
+
+        public void rightPaneControl()
+        {
+            if (MainSplitView.IsPaneOpen == true)
+            {
+                MainSplitView.IsPaneOpen = false;
+            }
+            else
+            {
+                MainSplitView.IsPaneOpen = true;
+            }
+        }
+
+        public void savePoint()
+        {
+            ((BasePoint)_selectedPoint.Tag).isTemp = false;
         }
     }
 }

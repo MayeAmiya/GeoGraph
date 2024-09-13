@@ -50,7 +50,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             Temp_PointInf = Assets._Temp_PointInf;
 
         }
-
+        GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame _mapFrameLogic;
         // 本组点信息
         public static PointInf Basic_PointInf;
         public static Update Update_PointInf;
@@ -95,22 +95,15 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 Margin = new Microsoft.UI.Xaml.Thickness(5)
             };
 
-            StackPanel horizontalPanelName = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Microsoft.UI.Xaml.Thickness(5)
-            };
-
             TextBlock textBlockName = new TextBlock
             {
-                Text = "Name : "
+                Text = $"Name : "
                 ,VerticalAlignment = VerticalAlignment.Center
             };
 
-            horizontalPanelName.Children.Add(textBlockName);
-
             if (PageNow.Name == null)
             {
+                // 没有Name那它肯定在temp中
                 TextBox textBoxName = new TextBox
                 {
                     Text = PageNow.Name,
@@ -123,7 +116,15 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                     PageNow.Object = textBoxName.Text;
                 };
 
-                horizontalPanelName.Children.Add(textBoxName);
+                {
+                    Grid grid = taskforce141();
+                    Grid.SetColumn(textBlockName, 0);
+                    Grid.SetColumn(textBoxName, 1);
+                    grid.Children.Add(textBlockName);
+                    grid.Children.Add(textBoxName);
+                    Information.Children.Add(grid);
+                }
+
             }
             else
             {
@@ -132,27 +133,45 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                     Text = PageNow.Name,
                     VerticalAlignment = VerticalAlignment.Center
                 };
-                horizontalPanelName.Children.Add(textBoxName);
+
+                {
+                    Grid grid = taskforce141();
+                    Grid.SetColumn(textBlockName, 0);
+                    Grid.SetColumn(textBoxName, 1);
+
+                    grid.Children.Add(textBlockName);
+                    grid.Children.Add(textBoxName);
+
+                    Information.Children.Add(grid);
+                }
+
             }
 
             TextBlock textBlockIndex = new TextBlock
             {
-                Text = $"Index : {PageNow.Index}",
+                Text = $"Index : ",
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            StackPanel horizontalPanelIndex = new StackPanel
+            TextBlock textIndex = new TextBlock
             {
-                Orientation = Orientation.Horizontal,
-                Margin = new Microsoft.UI.Xaml.Thickness(5)
+                Text = $"{PageNow.Index}",
+                VerticalAlignment = VerticalAlignment.Center
             };
 
-            horizontalPanelIndex.Children.Add(textBlockIndex);
+            {
+                Grid grid = taskforce141();
+                Grid.SetColumn(textBlockIndex, 0);
+                Grid.SetColumn(textIndex, 1);
+
+                grid.Children.Add(textBlockIndex);
+                grid.Children.Add(textIndex);
+
+                verticalPanel.Children.Add(grid);
+            }
 
             // 竖直排列 作为主体
 
-            verticalPanel.Children.Add(horizontalPanelName);
-            verticalPanel.Children.Add(horizontalPanelIndex);
             Information.Children.Add(verticalPanel);
 
             foreach (int index in itemList)
@@ -188,39 +207,38 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                         editableTextBox.TextChanged += (sender, e) =>
                         {
                             // 复制一份到Temp中 然后修改Temp值
+                            var NewTemp = Temp_PointInf.newItem(ItemNow);
                             // 首先这个Page会存入Temp 然后把这个item的原有的Index替换为新的Index
                             // 更新 newProperty.Name 为 TextBox 的新值
-                            ItemNow.Object = editableTextBox.Text;
+                            NewTemp.Object = editableTextBox.Text;
                         };
 
-                    // 创建水平布局容器
-                    StackPanel horizontalPanel = new StackPanel
-                        {
-                            Orientation = Orientation.Horizontal,
-                            Margin = new Microsoft.UI.Xaml.Thickness(5),
-                            VerticalAlignment = VerticalAlignment.Center
-                        };
-
-                        // 将文本框添加到水平布局容器中
-                        horizontalPanel.Children.Add(readOnlyTextBox);
-                        horizontalPanel.Children.Add(editableTextBox);
                         // 添加删除按钮
                         Button DeleteButton = new Button
                         {
-                            Content = "Delete -",
+                            Content = "Delete",
                             Margin = new Microsoft.UI.Xaml.Thickness(5),
                             VerticalAlignment = VerticalAlignment.Center
                         };
 
-                        DeleteButton.Click += (sender, e) =>
                         {
-                            //选择项目 删掉这行
-                            Information.Children.Remove(horizontalPanel);
-                        };
+                            Grid grid = taskforce141();
+                            Grid.SetColumn(readOnlyTextBox, 0);
+                            Grid.SetColumn(editableTextBox, 1);
+                            Grid.SetColumn(DeleteButton, 2);
 
-                        horizontalPanel.Children.Add(DeleteButton);
-                        // 将水平布局容器添加到页面的某个容器控件中（例如 StackPanel 或 Grid）
-                        Information.Children.Add(horizontalPanel);
+                            grid.Children.Add(readOnlyTextBox);
+                            grid.Children.Add(editableTextBox);
+                            grid.Children.Add(DeleteButton);
+
+                            DeleteButton.Click += (sender, e) =>
+                            {
+                                //选择项目 删掉这行
+                                Information.Children.Remove(grid);
+                                Temp_PointInf.deleteItem(ItemNow);
+                            };
+                            Information.Children.Add(grid);
+                        }
 
                     }
                     if (ItemNow.Type == "Image")
@@ -307,15 +325,9 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                         {
                             int tempTag = (int)selectedItem.Tag;
                             Property selectedEnum = find(tempTag);
-                            Selected.Object = selectedEnum.Object; // 将选中的枚举赋值给 Selected
+                            var NewTemp = Temp_PointInf.newItem(Selected);
+                            NewTemp.Object = selectedEnum.Object; // 将选中的枚举赋值给 Selected
                         }
-                    };
-
-
-                    StackPanel horizontalPanel = new StackPanel
-                    {
-                        Orientation = Orientation.Horizontal,
-                        Margin = new Microsoft.UI.Xaml.Thickness(5),
                     };
 
                     // 创建不可修改的文本框
@@ -325,7 +337,6 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                         Margin = new Microsoft.UI.Xaml.Thickness(5)
                     };
 
-                    horizontalPanel.Children.Add(readOnlyTextBox);
 
                     Button DeleteButton = new Button
                     {
@@ -334,77 +345,83 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                         HorizontalAlignment = HorizontalAlignment.Right
                     };
 
-                    horizontalPanel.Children.Add(comboBox);
-
-                    DeleteButton.Click += (sender, e) =>
                     {
-                        //选择项目 删掉这行
-                        // 结果是当前页面标记更新 送入缓存区 然后切换到然后切换到缓存区页面 再删掉缓存区的索引
-                        Information.Children.Remove(horizontalPanel);
+                        Grid grid = taskforce141();
+                        Grid.SetColumn(readOnlyTextBox, 0);
+                        Grid.SetColumn(comboBox, 1);
+                        Grid.SetColumn(DeleteButton, 2);
 
-                    };
+                        grid.Children.Add(readOnlyTextBox);
+                        grid.Children.Add(comboBox);
+                        grid.Children.Add(DeleteButton);
 
-                    horizontalPanel.Children.Add(DeleteButton);
-
-                    Information.Children.Add(horizontalPanel);
-                }
-                else if (ItemNow.Type == "Page")
-                    {
-                        // 说明是一个页面
-
-                        // 添加一个按钮 跳转到下一个页面
-                        Button button = new Button
-                        {
-                            Content = "Check IN",
-                            Margin = new Microsoft.UI.Xaml.Thickness(5),
-                            VerticalAlignment = VerticalAlignment.Center
-                        };
-                        void ButtonClick(object sender, RoutedEventArgs e)
-                        {
-                            Temp_PointInf.newPage(ItemNow.Index);
-                            Information.Children.Clear();
-                            refreshPage(ItemNow.Index);
-                        }
-
-                        button.Click += ButtonClick;
-
-                        // 创建不可修改的文本框
-                        TextBlock NameBlock = new TextBlock
-                        {
-                            Text = $"Page Name: {ItemNow.Name}",
-                            Margin = new Microsoft.UI.Xaml.Thickness(5),
-                            Width = 150,
-                            VerticalAlignment = VerticalAlignment.Center
-                        };
-
-                        // 创建水平布局容器
-                        StackPanel horizontalPanel = new StackPanel
-                        {
-                            Orientation = Orientation.Horizontal,
-                            Margin = new Microsoft.UI.Xaml.Thickness(5)
-                        };
-
-                        // 将文本框添加到水平布局容器中
-                        horizontalPanel.Children.Add(NameBlock);
-                        horizontalPanel.Children.Add(button);
-
-                        Button DeleteButton = new Button
-                        {
-                            Content = "Delete -",
-                            Margin = new Microsoft.UI.Xaml.Thickness(5),
-                            VerticalAlignment = VerticalAlignment.Center
-                        };
+                        Information.Children.Add(grid);
 
                         DeleteButton.Click += (sender, e) =>
                         {
                             //选择项目 删掉这行
-                            Information.Children.Remove(horizontalPanel);
+                            // 结果是当前页面标记更新 送入缓存区 然后切换到然后切换到缓存区页面 再删掉缓存区的索引
+                            Information.Children.Remove(grid);
+                            // 删掉该枚举 就是删除这个枚举的索引 标记为Deleted
+                            Temp_PointInf.deleteItem(ItemNow);
                         };
-
-                        horizontalPanel.Children.Add(DeleteButton);
-                        // 将水平布局容器添加到页面的某个容器控件中（例如 StackPanel 或 Grid）
-                        Information.Children.Add(horizontalPanel);
                     }
+                }
+                else if (ItemNow.Type == "Page")
+                {
+                    // 说明是一个页面
+
+                    // 添加一个按钮 跳转到下一个页面
+                    Button button = new Button
+                    {
+                        Content = "Check IN",
+                        Margin = new Microsoft.UI.Xaml.Thickness(5),
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+                    void ButtonClick(object sender, RoutedEventArgs e)
+                    {
+                        Information.Children.Clear();
+                        refreshPage(ItemNow.Index);
+                    }
+
+                    button.Click += ButtonClick;
+
+                    // 创建不可修改的文本框
+                    TextBlock NameBlock = new TextBlock
+                    {
+                        Text = $"Page Name: {ItemNow.Name}",
+                        Margin = new Microsoft.UI.Xaml.Thickness(5),
+                        Width = 150,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+
+                    Button DeleteButton = new Button
+                    {
+                        Content = "Delete",
+                        Margin = new Microsoft.UI.Xaml.Thickness(5),
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+
+                    
+                    {
+                        Grid grid = taskforce141();
+                        Grid.SetColumn(NameBlock, 0);
+                        Grid.SetColumn(button, 1);
+                        Grid.SetColumn(DeleteButton, 2);
+
+                        grid.Children.Add(NameBlock);
+                        grid.Children.Add(button);
+                        grid.Children.Add(DeleteButton);
+
+                        DeleteButton.Click += (sender, e) =>
+                        {
+                            //选择项目 删掉这行
+                            Information.Children.Remove(grid);
+                            Temp_PointInf.deleteItem(ItemNow);
+                        };
+                        Information.Children.Add(grid);
+                    }
+                }
                 else
                     {
                         Console.WriteLine("Error: Unknown Type");
@@ -442,7 +459,6 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 Content = NaviPivot,
                 Margin = new Microsoft.UI.Xaml.Thickness(5),
                 VerticalAlignment = VerticalAlignment.Center
-
             };
 
             StackPanel verticalPanelString = new StackPanel();
@@ -561,21 +577,25 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                         Margin = new Microsoft.UI.Xaml.Thickness(5)
                     };
 
-                    horizontalPanel.Children.Add(textBox);
-                    horizontalPanel.Children.Add(DeleteEnumItem);
-
-                    DeleteEnumItem.Click += (sender, e) =>
                     {
-                        //选择项目 删掉这行
-                        verticalPanelEnum.Children.Remove(horizontalPanel);
-                        Temp_PointInf.Temp_basicInfo.Remove(eNumTemp.Index);
-                    };
+                        Grid grid = taskforce141();
+                        Grid.SetColumn(textBox, 1);
+                        Grid.SetColumn(DeleteEnumItem, 2);
 
-                    verticalPanelEnum.Children.Add(horizontalPanel);
+                        grid.Children.Add(textBox);
+                        grid.Children.Add(DeleteEnumItem);
+
+                        verticalPanelEnum.Children.Add(grid);
+
+                        DeleteEnumItem.Click += (sender, e) =>
+                        {
+                            //选择项目 删掉这行
+                            verticalPanelEnum.Children.Remove(grid);
+                            Temp_PointInf.Temp_basicInfo.Remove(eNumTemp.Index);
+                        };
+                    }
 
                     verticalPanelEnum.Children.Add(buttonEnum());
-
-
                     verticalPanelEnum.Children.Add(CreateEnumSave());
                 };
 
@@ -717,61 +737,35 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 newProperty.Name = textBoxName.Text;
             };
 
-            StackPanel horizontalPanelName = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Microsoft.UI.Xaml.Thickness(5)
-            };
-
-            horizontalPanelName.Children.Add(textBlockName);
-            horizontalPanelName.Children.Add(textBoxName);
-
             TextBlock textBlockIndex = new TextBlock
             {
-                Text = $"Index : {newProperty.Index}",
+                Text = $"Index : ",
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-
-            StackPanel horizontalPanelIndex = new StackPanel
+            TextBlock textIndex = new TextBlock
             {
-                Orientation = Orientation.Horizontal,
-                Margin = new Microsoft.UI.Xaml.Thickness(5)
-            };
-
-            horizontalPanelIndex.Children.Add(textBlockIndex);
-
-
-
-            StackPanel horizontalPanelType = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Microsoft.UI.Xaml.Thickness(5)
-            };
-
-            TextBlock textBlockType = new TextBlock
-            {
-                Text = "Type  : ",
-                VerticalAlignment = VerticalAlignment.Center
-
-            };
-
-            horizontalPanelType.Children.Add(textBlockType);
-
-            TextBlock textBoxType = new TextBlock
-            {
-                Text = newProperty.Type,
+                Text = $"{newProperty.Index}",
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            horizontalPanelType.Children.Add(textBoxType);
-            
+            {
+                Grid grid = taskforce141();
+                Grid.SetColumn(textBlockName, 0);
+                Grid.SetColumn(textBoxName, 1);
+                grid.Children.Add(textBlockName);
+                grid.Children.Add(textBoxName);
+                verticalPanel.Children.Add(grid);
+            }
 
-            // 竖直排列 作为主体
-
-            verticalPanel.Children.Add(horizontalPanelName);
-            verticalPanel.Children.Add(horizontalPanelIndex);
-            verticalPanel.Children.Add(horizontalPanelType);
+            {
+                Grid grid = taskforce141();
+                Grid.SetColumn(textBlockIndex, 0);
+                Grid.SetColumn(textIndex, 1);
+                grid.Children.Add(textBlockIndex);
+                grid.Children.Add(textIndex);
+                verticalPanel.Children.Add(grid);
+            }
 
             return verticalPanel;
         }
@@ -841,15 +835,39 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
 
         private void SavePoint_Click(object sender, RoutedEventArgs e)
         {
+            pointInfSelect().isTemp = false;
+            Temp_PointInf.Temp_Point = pointInfSelect();
             Update_PointInf.merge(Temp_PointInf);
+
+            Temp_PointInf.clear();
             // 保存数据到更新请求列表
         }
 
         private void AbrotPoint_Clock(object sender, RoutedEventArgs e)
         {
             Temp_PointInf.clear();
+            _mapFrameLogic.releasePoint();
+            _mapFrameLogic.rightPaneControl();
             // 退出不保存 放弃本点更改
         }
 
+        private void ExpPoint_Clock(object sender, RoutedEventArgs e)
+        {
+            _mapFrameLogic.paneExp();
+            // 删除这个点
+        }
+
+        public void GetMapFrame(GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame mapFrameLogic)
+        {
+            _mapFrameLogic = mapFrameLogic;
+        }
+        private Grid taskforce141()
+        {
+            Grid grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // 第1列
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }); // 第2列
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            return grid;
+        }
     }
 }

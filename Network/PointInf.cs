@@ -37,6 +37,15 @@ namespace GeoGraph.Network
             date = DateTime.Now.ToString();
             IndexUpdate();
         }
+
+        public Property(Property property)
+        {
+            Name = property.Name;
+            Index = property.Index;
+            Type = property.Type;
+            Object = property.Object;
+            date = DateTime.Now.ToString();
+        }
         
         public void dateUpdate()
         {
@@ -329,63 +338,30 @@ namespace GeoGraph.Network
             Temp_basicInfo.Add(new_Page.Index, new_Page);
         }
 
-        public Property newItem(string name, string type, string info)
+        public Property newItem(Property temp_item)
         {
-            int hashcode = name.GetHashCode()^type.GetHashCode()^info.GetHashCode()+DateTime.Now.TimeOfDay.GetHashCode();
-            Property temp_item = new Property(name, hashcode, type, info);
             // 加入本次更改信息列表
-            Temp_basicInfo.Add(hashcode, temp_item);
-
-            var tempPage = Temp_Page.Object as List<int>; // 尝试将 object 转换为 List<int>
-            tempPage.Add(hashcode); // 添加 hashcode 到列表
+            if(!Temp_basicInfo.ContainsKey(temp_item.Index))
+            {
+                Property newTemp = new Property(temp_item);
+                Temp_basicInfo.Add(newTemp.Index, newTemp);
+                return newTemp;
+            }
             return temp_item;
         }
 
-        public Property newPage(int pageindex)
+        public Property deleteItem(Property temp_item)
         {
-            //复制一个page
-            Property Temp_Page;
-            if(!Temp_basicInfo.ContainsKey(pageindex))
-            {            
-                Temp_Page = new Property
-                (
-                    _pointinf.basicInfo[pageindex].Name,
-                     _pointinf.basicInfo[pageindex].Index,
-                    _pointinf.basicInfo[pageindex].Type,
-                    new List<int> ((List<int>)_pointinf.basicInfo[pageindex].Object)
-                );
-                Temp_basicInfo.Add(Temp_Page.Index, Temp_Page);
-                Temp_PageInfo.Add(Temp_Page.Name, Temp_Page);
-            }
-            else
+            // 删除本次更改信息列表
+            if(!Temp_basicInfo.ContainsKey(temp_item.Index))
             {
-                // 如果存在 有且只有可能是已经保存了的页面
-                Temp_Page = Temp_basicInfo[pageindex];
+                Property newTemp = new Property(temp_item);
+                newTemp.deleted = true;
+                Temp_basicInfo.Add(newTemp.Index, newTemp);
+                return newTemp;
             }
-            return Temp_Page;
-        }
-
-        public Property newEnum(int enumindex)
-        {
-            Property Temp_Enum;
-            if (!Temp_basicInfo.ContainsKey(enumindex))
-            {
-                Temp_Enum = new Property
-                (
-                    _pointinf.basicInfo[enumindex].Name,
-                     _pointinf.basicInfo[enumindex].Index,
-                    _pointinf.basicInfo[enumindex].Type,
-                    new List<int>((List<int>)_pointinf.basicInfo[enumindex].Object)
-                );
-                Temp_basicInfo.Add(Temp_Page.Index, Temp_Page);
-                Temp_EnumInfo.Add(Temp_Page.Name, Temp_Page);
-            }
-            else
-            {
-                // 如果存在 有且只有可能是已经保存了的页面
-                Temp_Enum = Temp_basicInfo[enumindex];
-            }
-            return Temp_Enum;
+            temp_item.deleted = true;
+            return temp_item;
         }
     }
 }

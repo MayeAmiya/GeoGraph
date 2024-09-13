@@ -83,7 +83,6 @@ namespace GeoGraph.Network
                         existingProperty.dateUpdate();
                         // 更新字典中的对象
                         Update_basicInfo[item.Key] = existingProperty;
-
                     }
                     // 然后还要更新一下
                 }
