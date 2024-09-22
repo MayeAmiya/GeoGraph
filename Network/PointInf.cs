@@ -267,8 +267,8 @@ namespace GeoGraph.Network
     // 这里存储本次更改的点信息 作用于单个点
     public class PointInfTemp
     {
-        private PointInf _pointinf;
-        private Property Temp_Page;
+        public PointInf _pointinf;
+        public Property Temp_Page;
         public BasePoint Temp_Point;
         public PointInfTemp(PointInf pointinf)
         {
@@ -324,6 +324,7 @@ namespace GeoGraph.Network
         {
             Temp_Point = temp;
             // newPage
+
             Property new_Page = new Property
             (
                 null,
@@ -333,9 +334,10 @@ namespace GeoGraph.Network
             );
 
             new_Page.IndexUpdate();
-            temp.pointInfCode = new_Page.Index;
 
+            temp.pointInfCode = new_Page.Index;
             Temp_basicInfo.Add(new_Page.Index, new_Page);
+
         }
 
         public Property newItem(Property temp_item)

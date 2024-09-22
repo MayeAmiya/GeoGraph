@@ -56,11 +56,13 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <Button Content="保存" Click="SavePoint_Click" Margin="10,0,0,0" Grid.Column="0" />
             <Button Content="放弃" Click="AbrotPoint_Clock" Margin="10,0,0,0" Grid.Column="1" />
-            <Button Content="扩展" Click="ExpPoint_Clock" Margin="10,0,0,0" Grid.Column="2" />
+            <Button Content="删除" Click="DeletePoint_Clock" Margin="10,0,0,0" Grid.Column="2" />
+            <Button Content="扩展" Click="ExpPoint_Clock" Margin="10,0,0,0" Grid.Column="3" />
         </Grid>
     </Grid>
 </Page>

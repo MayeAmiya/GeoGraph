@@ -44,33 +44,46 @@ namespace GeoGraph.Pages.MainPage
             }
         }
 
+        private Dictionary<string, Page> _pageInstances = new Dictionary<string, Page>();
+
         private void NavigateToPage(string itemTag)
         {
-            Type pageType = null;
-
-            switch (itemTag)
+            if (!_pageInstances.TryGetValue(itemTag, out Page pageInstance))
             {
-                case "MapPage":
-                    if(Assets._MapInfo?.MapName != null)
-                        pageType = typeof(GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame);
-                    break;
-                case "SavePage":
-                    pageType = typeof(SaveInfFrame);
-                    break;
-                case "Settings":
-                    pageType = typeof(SettingFrame);
-                    break;
-                case "MapChoosePage":
-                    pageType = typeof(MapChooseFrame);
-                    break;
+                switch (itemTag)
+                {
+                    case "MapPage":
+                        if (Assets._MapInfo?.MapName != null)
+                            pageInstance = new GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame();
+                        break;
+                    case "SavePage":
+                        if (Assets._MapInfo?.MapName != null)
+                            pageInstance = new SaveInfFrame();
+                        break;
+                    case "Settings":
+                        pageInstance = new SettingFrame();
+                        break;
+                    case "MapChoosePage":
+                        pageInstance = new MapChooseFrame();
+                        break;
+                }
+
+                if (pageInstance != null)
+                    _pageInstances[itemTag] = pageInstance;
             }
 
-            if (pageType != null && MasterPageFrame.CurrentSourcePageType != pageType)
+            if (pageInstance != null && MasterPageFrame.Content != pageInstance)
             {
-                MasterPageFrame.Navigate(pageType);
+                MasterPageFrame.Content = pageInstance;  // 直接设置页面实例
+                if(itemTag == "SavePage" && Assets._MapInfo?.MapName != null)
+                {
+                    var Save = pageInstance as SaveInfFrame;
+                    Save.clear_display();
+                    Save.diff_display();
+                }
             }
-
         }
+
 
         private void Refresh_Click()
         {

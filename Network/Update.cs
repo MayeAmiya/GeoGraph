@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ namespace GeoGraph.Network
         public Dictionary<string, Property> Update_EnumInfo;
         public Dictionary<string, Property> Update_PageInfo;
 
-        List<BasePoint> Update_basePoints;
+        public List<BasePoint> Update_basePoints;
 
         public void clear()
         {
@@ -91,7 +92,14 @@ namespace GeoGraph.Network
             Update_basePoints.Add(temp.Temp_Point);
         }
 
-        public static void Upload(string RequestObject)
+        public void remove(PointInfTemp temp)
+        {
+            temp.Temp_Point.deleted = true;
+            Update_basePoints.Remove(temp.Temp_Point);
+        }
+
+
+            public static void Upload(string RequestObject)
         {
             return;
         }

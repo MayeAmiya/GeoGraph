@@ -32,6 +32,7 @@ namespace GeoGraph.Pages.Login
             // 后端未完成 MainWindow._Connect = new GeoGraph.Network.Connect();
         }
 
+        // 这里加入图形验证码窗口
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             string username = UsernameTextBox.Text;

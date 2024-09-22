@@ -106,8 +106,12 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 var deltaY = currentPosition.Y - _lastPointerPosition.Y;
 
                 // 更新 Canvas 的位置
-                CanvasTranslateTransform.X += deltaX;
-                CanvasTranslateTransform.Y += deltaY;
+                if (!Double.IsInfinity(deltaX) && !Double.IsInfinity(deltaY))
+                {
+                    CanvasTranslateTransform.X += deltaX;
+                    CanvasTranslateTransform.Y += deltaY;
+
+                }
 
                 _lastPointerPosition = currentPosition;
             }
@@ -136,7 +140,8 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 {
                     _selectedPoint = sender as Ellipse;
                     OnEllipseTapped(_selectedPoint, null);
-                    pointInfFramePage.refreshPage(pointInfSelect().pointInfCode);
+                    pointInfFramePage.setPage(pointInfSelect().pointInfCode);
+                    pointInfFramePage.refreshPage();
                 }
                 else
                 {
@@ -152,12 +157,12 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                     };
 
                     _selectedPoint = CreateEllipse(temp);
-                    OnEllipseTapped(_selectedPoint, null);
                     PointInfFrame.Temp_PointInf.newPoint(temp);
-                    pointInfFramePage.refreshPage(temp.pointInfCode);
+                    OnEllipseTapped(_selectedPoint, null);
+                    pointInfFramePage.setPage(pointInfSelect().pointInfCode);
+                    pointInfFramePage.refreshPage();
                 }
             }
-
         }
 
         private void OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -194,7 +199,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 {
                     // 清空暂时点数据
                     pointInfFramePage.PaneClear();
-                    PointInfFrame.Temp_PointInf.clear();
+
                     // 如果是暂时点 那么从画布中删除
                     if (((BasePoint)_selectedPoint.Tag).isTemp)
                     {
@@ -204,7 +209,6 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                     //如果是永久点 那么取消选择
                     else
                     {
-                        PointInfFrame.Temp_PointInf.clear();
                         _selectedPoint.Fill = new SolidColorBrush(Microsoft.UI.Colors.Red);
                         _selectedPoint = null;
                     }
@@ -214,8 +218,11 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             _selectedPoint = tappedEllipse;
             _selectedPoint.Fill = new SolidColorBrush(Microsoft.UI.Colors.Blue);
             // C#的class 一般都是引用 所以这里直接强转类型然后改就行
-
+            pointInfFramePage.setPage(pointInfSelect().pointInfCode);
+            pointInfFramePage.refreshPage();
             MainSplitView.IsPaneOpen = true;
+            
+
         }
 
         public static BasePoint pointInfSelect()
@@ -224,6 +231,11 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 return ((BasePoint)_selectedPoint.Tag);
             else
                 return null;
+        }
+
+        public void RemovePoint()
+        {
+            MainCanvas.Children.Remove(_selectedPoint);
         }
 
         public void paneExp()

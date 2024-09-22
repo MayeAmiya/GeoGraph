@@ -29,7 +29,7 @@ namespace GeoGraph.Pages.MainPage
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// 展示地图列表 展示地图图片和信息
-    /// 拿到Assets中的地图列表 M
+    /// 拿到Assets中的地图列表
     /// </summary>
     public sealed partial class MapChooseFrame : Page
     {
@@ -205,6 +205,11 @@ namespace GeoGraph.Pages.MainPage
         {
             // 添加地图信息到列表
 
+
+
+            // 检查用户权限组
+
+
             foreach (var item in mapinfos)
             {
                 if (item.MapName == null)
@@ -239,7 +244,6 @@ namespace GeoGraph.Pages.MainPage
 
                 MapListViewInf.Children.Clear();
                 // 显示划出面板
-                InfoPanelSplitView.IsPaneOpen = true;
 
                 System.Diagnostics.Debug.WriteLine("Selected");
                 // 现在放置内容

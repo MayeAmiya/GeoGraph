@@ -10,6 +10,35 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
+        <!-- 定义两行，一行放导航，一行放数据 -->
+        <Grid.RowDefinitions>
+            <!-- 数据框，占据剩余空间 -->
+            <RowDefinition Height="*" />
+            <!-- 分隔线，自动高度 -->
+            <RowDefinition Height="Auto" />
+            <!-- 处理框，自动高度 -->
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
+        <!-- 数据显示区域 -->
+        <ScrollViewer x:Name ="ScrollDiff" Grid.Row="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="DiffContent" 
+                        Orientation="Vertical" 
+                        HorizontalAlignment="Stretch"  
+                        VerticalAlignment="Top" 
+                        Margin="0,10,0,0">
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="0,1,0,0" />
+
+        <!-- 处理决策区域 -->
+        <Grid Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Button Content="更新到服务器" Click="Update_Click" Margin="10,0,0,0" Grid.Column="0" />
+        </Grid>
     </Grid>
 </Page>

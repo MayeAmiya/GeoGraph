@@ -55,6 +55,8 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
         public static PointInf Basic_PointInf;
         public static Update Update_PointInf;
         public static PointInfTemp Temp_PointInf;
+
+        public Property PageNow;
         // 最重要的部分
         private Property find(int Index)
         {
@@ -62,30 +64,40 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             if (Temp_PointInf.Temp_basicInfo.ContainsKey(Index))
             {
                 Now = Temp_PointInf.Temp_basicInfo[Index];
+                return Now;
             }
             else if (Update_PointInf.Update_basicInfo.ContainsKey(Index))
             {
                 Now = Update_PointInf.Update_basicInfo[Index];
+                return Now;
             }
             else if (Basic_PointInf.basicInfo.ContainsKey(Index))
             {
                 Now = Basic_PointInf.basicInfo[Index];
+                return Now;
             }
             else 
             { 
                 Now = null;
+                return Now;
             }
-            return Now;
         }
 
-        public void refreshPage(int pageIndex)
+        public void setPage(int Index)
+        {
+            // 设置页面
+
+            PageNow = find(Index);
+            Temp_PointInf.Temp_Page = PageNow;
+        }
+
+        public void refreshPage()
         {
             //根据布局创建页面 每次更改信息要同步到布局器中
             Information.Children.Clear();
             // 本次得到的是点信息直接对应的页面 所以先拿出一个Page 然后对这Page的List展示元素
             // 根据List的索引值取出元素
             // 依次从Temp Update Basic中获取信息 然后布局
-            Property PageNow = find(pageIndex);
             List<int> itemList = PageNow.Object as List<int>;
             // 如果是空页面 那么就需要在这里初始化它 而且这个pageIndex
 
@@ -94,265 +106,216 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 Orientation = Orientation.Vertical,
                 Margin = new Microsoft.UI.Xaml.Thickness(5)
             };
-
-            TextBlock textBlockName = new TextBlock
             {
-                Text = $"Name : "
-                ,VerticalAlignment = VerticalAlignment.Center
-            };
-
-            if (PageNow.Name == null)
-            {
-                // 没有Name那它肯定在temp中
-                TextBox textBoxName = new TextBox
+                TextBlock textBlockName = new TextBlock
                 {
-                    Text = PageNow.Name,
+                    Text = "Name : "
+    ,
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
-                textBoxName.TextChanged += (sender, e) =>
+                if (PageNow.Name == null)
                 {
-                    // 更新 newProperty.Name 为 TextBox 的新值
-                    PageNow.Object = textBoxName.Text;
-                };
-
-                {
-                    Grid grid = taskforce141();
-                    Grid.SetColumn(textBlockName, 0);
-                    Grid.SetColumn(textBoxName, 1);
-                    grid.Children.Add(textBlockName);
-                    grid.Children.Add(textBoxName);
-                    Information.Children.Add(grid);
-                }
-
-            }
-            else
-            {
-                TextBlock textBoxName = new TextBlock
-                {
-                    Text = PageNow.Name,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-
-                {
-                    Grid grid = taskforce141();
-                    Grid.SetColumn(textBlockName, 0);
-                    Grid.SetColumn(textBoxName, 1);
-
-                    grid.Children.Add(textBlockName);
-                    grid.Children.Add(textBoxName);
-
-                    Information.Children.Add(grid);
-                }
-
-            }
-
-            TextBlock textBlockIndex = new TextBlock
-            {
-                Text = $"Index : ",
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            TextBlock textIndex = new TextBlock
-            {
-                Text = $"{PageNow.Index}",
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            {
-                Grid grid = taskforce141();
-                Grid.SetColumn(textBlockIndex, 0);
-                Grid.SetColumn(textIndex, 1);
-
-                grid.Children.Add(textBlockIndex);
-                grid.Children.Add(textIndex);
-
-                verticalPanel.Children.Add(grid);
-            }
-
-            // 竖直排列 作为主体
-
-            Information.Children.Add(verticalPanel);
-
-            foreach (int index in itemList)
-                {
-                //如果不是页面或枚举的话
-                Property ItemNow = find(index);
-                //根据ItemNow的类型进行布局
-                if (ItemNow.Type != "Enum" && ItemNow.Type != "Page")
-                {
-                    //说明类型是字符串！这里是字符串处理
-                    if (ItemNow.Type == "String")
+                    // 没有Name那它肯定在temp中
+                    TextBox textBoxName = new TextBox
                     {
-                        // 说明是一个字符串
-                        string content = ItemNow.Object as string;
-                        // 字符串一般是一个Name:Value的形式
-                        // 创建一对TextBox
+                        Text = PageNow.Name,
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+
+                    textBoxName.TextChanged += (sender, e) =>
+                    {
+                        // 更新 newProperty.Name 为 TextBox 的新值
+                        PageNow.Name = textBoxName.Text;
+                    };
+
+                    {
+                        Grid grid = taskforce141(textBlockName, textBoxName, null);
+                        Information.Children.Add(grid);
+                    }
+
+                }
+                else
+                {
+                    TextBox textBoxName = new TextBox
+                    {
+                        Text = PageNow.Name,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        IsReadOnly = true
+                    };
+
+                    {
+                        Grid grid = taskforce141(textBlockName, textBoxName, null);
+                        Information.Children.Add(grid);
+                    }
+
+                }
+
+                TextBlock textBlockIndex = new TextBlock
+                {
+                    Text = "Index : ",
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+
+                TextBox textIndex = new TextBox
+                {
+                    Text = $"{PageNow.Index}",
+                    VerticalAlignment = VerticalAlignment.Center,
+                    IsReadOnly = true
+                };
+
+                {
+                    Grid grid = taskforce141(textBlockIndex, textIndex, null);
+                    verticalPanel.Children.Add(grid);
+                }
+
+                Information.Children.Add(verticalPanel);
+            }
+
+            if(itemList != null)
+                foreach (int index in itemList)
+                {
+                    //如果不是页面或枚举的话
+                    Property ItemNow = find(index);
+                    //根据ItemNow的类型进行布局
+                    if (ItemNow.Type != "Enum" && ItemNow.Type != "Page")
+                    {
+                        //说明类型是字符串！这里是字符串处理
+                        if (ItemNow.Type == "String")
+                        {
+                            // 说明是一个字符串
+                            string content = ItemNow.Object as string;
+                            // 字符串一般是一个Name:Value的形式
+                            // 创建一对TextBox
+
+                            // 创建不可修改的文本框
+                            TextBlock readOnlyTextBox = new TextBlock
+                            {
+                                Text = $"{ItemNow.Name} : ",
+                                Margin = new Microsoft.UI.Xaml.Thickness(5),
+                                VerticalAlignment = VerticalAlignment.Center
+                            };
+                            // 创建可编辑的文本框
+                            TextBox editableTextBox = new TextBox
+                            {
+                                Text = $"{content}",
+                                Margin = new Microsoft.UI.Xaml.Thickness(5),
+                                VerticalAlignment = VerticalAlignment.Center
+                            };
+
+                            editableTextBox.TextChanged += (sender, e) =>
+                            {
+                                // 复制一份到Temp中 然后修改Temp值
+                                var NewTemp = Temp_PointInf.newItem(ItemNow);
+                                // 首先这个Page会存入Temp 然后把这个item的原有的Index替换为新的Index
+                                // 更新 newProperty.Name 为 TextBox 的新值
+                                NewTemp.Object = editableTextBox.Text;
+                            };
+
+                            // 添加删除按钮
+                            Button DeleteButton = new Button
+                            {
+                                Content = "Delete",
+                                Margin = new Microsoft.UI.Xaml.Thickness(5),
+                                VerticalAlignment = VerticalAlignment.Center
+                            };
+
+                            {
+                                Grid grid = taskforce141(readOnlyTextBox, editableTextBox, DeleteButton);
+
+                                DeleteButton.Click += (sender, e) =>
+                                {
+                                    //选择项目 删掉这行
+                                    Information.Children.Remove(grid);
+                                    Temp_PointInf.deleteItem(ItemNow);
+                                };
+                                Information.Children.Add(grid);
+                            }
+
+                        }
+                    }
+                    else if (ItemNow.Type == "Enum")
+                    {
+                        // 说明是一个枚举
+                        // 用ListView吧！
+                        var tuple = ItemNow.Object as List<int>;
+
+                        Property Selected = find(tuple[0]);
+                        Property EnumItem = find(tuple[1]);
+
+                        var list = EnumItem.Object as List<int>;
+
+                        ComboBox comboBox = new ComboBox
+                        {
+                            Margin = new Microsoft.UI.Xaml.Thickness(5),
+                            Width = 200 // 设置适当的宽度
+                        };
+
+                        // 添加枚举项到 ComboBox
+                        foreach (int i in list)
+                        {
+                            Property enumNow = find(i);
+
+                            // 创建 ComboBoxItem 作为每个选项
+                            ComboBoxItem comboBoxItem = new ComboBoxItem
+                            {
+                                Content = enumNow.Object as string,
+                                Tag = enumNow.Index // 保留索引信息
+                            };
+
+                            // 添加 ComboBoxItem 到 ComboBox
+                            comboBox.Items.Add(comboBoxItem);
+                        }
+
+                        ComboBoxItem comboBoxItemNow = new ComboBoxItem
+                        {
+                            Content = Selected.Object
+                        };
+                        comboBox.Items.Add(comboBoxItemNow);
+                        comboBox.SelectedItem = comboBoxItemNow; // 初始值
+
+                        // 处理 ComboBox 选择变化事件
+                        comboBox.SelectionChanged += (sender, e) =>
+                        {
+                            if (comboBox.SelectedItem is ComboBoxItem selectedItem)
+                            {
+                                int tempTag = (int)selectedItem.Tag;
+                                Property selectedEnum = find(tempTag);
+                                var NewTemp = Temp_PointInf.newItem(Selected);
+                                NewTemp.Object = selectedEnum.Object; // 将选中的枚举赋值给 Selected
+                            }
+                        };
 
                         // 创建不可修改的文本框
                         TextBlock readOnlyTextBox = new TextBlock
                         {
-                            Text = $"{ItemNow.Name} : ",
-                            Margin = new Microsoft.UI.Xaml.Thickness(5),
-                            VerticalAlignment = VerticalAlignment.Center
-                        };
-                        // 创建可编辑的文本框
-                        TextBox editableTextBox = new TextBox
-                        {
-                            Text = $"{content}",
-                            Margin = new Microsoft.UI.Xaml.Thickness(5),
-                            VerticalAlignment = VerticalAlignment.Center
+                            Text = $"{ItemNow.Name} :",
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
                         };
 
-                        editableTextBox.TextChanged += (sender, e) =>
-                        {
-                            // 复制一份到Temp中 然后修改Temp值
-                            var NewTemp = Temp_PointInf.newItem(ItemNow);
-                            // 首先这个Page会存入Temp 然后把这个item的原有的Index替换为新的Index
-                            // 更新 newProperty.Name 为 TextBox 的新值
-                            NewTemp.Object = editableTextBox.Text;
-                        };
 
-                        // 添加删除按钮
                         Button DeleteButton = new Button
                         {
                             Content = "Delete",
                             Margin = new Microsoft.UI.Xaml.Thickness(5),
-                            VerticalAlignment = VerticalAlignment.Center
+                            HorizontalAlignment = HorizontalAlignment.Right
                         };
 
                         {
-                            Grid grid = taskforce141();
-                            Grid.SetColumn(readOnlyTextBox, 0);
-                            Grid.SetColumn(editableTextBox, 1);
-                            Grid.SetColumn(DeleteButton, 2);
+                        Grid grid = new Grid();
 
-                            grid.Children.Add(readOnlyTextBox);
-                            grid.Children.Add(editableTextBox);
-                            grid.Children.Add(DeleteButton);
+                        // 定义三列，分别用于 TextBox, TextBlock, Button
+                        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) }); // 第1列
+                        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }); // 第2列
+                        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) }); // 第3列
 
-                            DeleteButton.Click += (sender, e) =>
-                            {
-                                //选择项目 删掉这行
-                                Information.Children.Remove(grid);
-                                Temp_PointInf.deleteItem(ItemNow);
-                            };
-                            Information.Children.Add(grid);
-                        }
-
-                    }
-                    if (ItemNow.Type == "Image")
-                        {
-                            // 说明是一个图片 这里是图片名 我们需要下载图片并且在asset中找到他 暂且不做
-                            string content = ItemNow.Object as string;
-                            // 创建一个图像显示 缩放至合适大小 宽度为控件宽度
-                            string ImagePath = Assets.FindImage(content);
-                            Image image = new Image
-                            {
-                                Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(content)),
-                                Stretch = Microsoft.UI.Xaml.Media.Stretch.Uniform,
-                                Width = 150,
-                                Height = 150
-                            };
-                            StackPanel horizontalPanel = new StackPanel
-                            {
-                                Orientation = Orientation.Horizontal,
-                                Margin = new Microsoft.UI.Xaml.Thickness(5)
-                            };
-                            horizontalPanel.Children.Add(image);
-
-                            Button DeleteButton = new Button
-                            {
-                                Content = "Delete -",
-                                Margin = new Microsoft.UI.Xaml.Thickness(5),
-
-                            };
-
-                            DeleteButton.Click += (sender, e) =>
-                            {
-                                //选择项目 删掉这行
-                                Information.Children.Remove(horizontalPanel);
-                            };
-
-                            horizontalPanel.Children.Add(DeleteButton);
-                            Information.Children.Add(horizontalPanel);
-                        }
-                }
-                else if (ItemNow.Type == "Enum")
-                {
-                    // 说明是一个枚举
-                    // 用ListView吧！
-                    var tuple = ItemNow.Object as List<int>;
-
-                    Property Selected = find(tuple[0]);
-                    Property EnumItem = find(tuple[1]);
-
-                    var list = EnumItem.Object as List<int>;
-
-                    ComboBox comboBox = new ComboBox
-                    {
-                        Margin = new Microsoft.UI.Xaml.Thickness(5),
-                        Width = 200 // 设置适当的宽度
-                    };
-
-                    // 添加枚举项到 ComboBox
-                    foreach (int i in list)
-                    {
-                        Property enumNow = find(i);
-
-                        // 创建 ComboBoxItem 作为每个选项
-                        ComboBoxItem comboBoxItem = new ComboBoxItem
-                        {
-                            Content = enumNow.Object as string,
-                            Tag = enumNow.Index // 保留索引信息
-                        };
-
-                        // 添加 ComboBoxItem 到 ComboBox
-                        comboBox.Items.Add(comboBoxItem);
-                    }
-
-                    ComboBoxItem comboBoxItemNow = new ComboBoxItem
-                    {
-                        Content = Selected.Object
-                    };
-                    comboBox.Items.Add(comboBoxItemNow);
-                    comboBox.SelectedItem = comboBoxItemNow; // 初始值
-
-                    // 处理 ComboBox 选择变化事件
-                    comboBox.SelectionChanged += (sender, e) =>
-                    {
-                        if (comboBox.SelectedItem is ComboBoxItem selectedItem)
-                        {
-                            int tempTag = (int)selectedItem.Tag;
-                            Property selectedEnum = find(tempTag);
-                            var NewTemp = Temp_PointInf.newItem(Selected);
-                            NewTemp.Object = selectedEnum.Object; // 将选中的枚举赋值给 Selected
-                        }
-                    };
-
-                    // 创建不可修改的文本框
-                    TextBlock readOnlyTextBox = new TextBlock
-                    {
-                        Text = $"{ItemNow.Name} :",
-                        Margin = new Microsoft.UI.Xaml.Thickness(5)
-                    };
-
-
-                    Button DeleteButton = new Button
-                    {
-                        Content = "Delete",
-                        Margin = new Microsoft.UI.Xaml.Thickness(5),
-                        HorizontalAlignment = HorizontalAlignment.Right
-                    };
-
-                    {
-                        Grid grid = taskforce141();
                         Grid.SetColumn(readOnlyTextBox, 0);
-                        Grid.SetColumn(comboBox, 1);
-                        Grid.SetColumn(DeleteButton, 2);
-
                         grid.Children.Add(readOnlyTextBox);
+
+                        Grid.SetColumn(comboBox, 1);
                         grid.Children.Add(comboBox);
+
+                        Grid.SetColumn(DeleteButton, 2);
                         grid.Children.Add(DeleteButton);
 
                         Information.Children.Add(grid);
@@ -366,52 +329,60 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                             Temp_PointInf.deleteItem(ItemNow);
                         };
                     }
-                }
-                else if (ItemNow.Type == "Page")
-                {
-                    // 说明是一个页面
-
-                    // 添加一个按钮 跳转到下一个页面
-                    Button button = new Button
-                    {
-                        Content = "Check IN",
-                        Margin = new Microsoft.UI.Xaml.Thickness(5),
-                        VerticalAlignment = VerticalAlignment.Center
-                    };
-                    void ButtonClick(object sender, RoutedEventArgs e)
-                    {
-                        Information.Children.Clear();
-                        refreshPage(ItemNow.Index);
                     }
-
-                    button.Click += ButtonClick;
-
-                    // 创建不可修改的文本框
-                    TextBlock NameBlock = new TextBlock
+                    else if (ItemNow.Type == "Page")
                     {
-                        Text = $"Page Name: {ItemNow.Name}",
-                        Margin = new Microsoft.UI.Xaml.Thickness(5),
-                        Width = 150,
-                        VerticalAlignment = VerticalAlignment.Center
-                    };
+                        // 说明是一个页面
 
-                    Button DeleteButton = new Button
-                    {
-                        Content = "Delete",
-                        Margin = new Microsoft.UI.Xaml.Thickness(5),
-                        VerticalAlignment = VerticalAlignment.Center
-                    };
+                        // 添加一个按钮 跳转到下一个页面
+                        Button button = new Button
+                        {
+                            Content = "Check IN",
+                            Margin = new Microsoft.UI.Xaml.Thickness(5),
+                            VerticalAlignment = VerticalAlignment.Center
+                        };
 
-                    
-                    {
-                        Grid grid = taskforce141();
+                        void ButtonClick(object sender, RoutedEventArgs e)
+                        {
+                            Information.Children.Clear();
+                            setPage(ItemNow.Index);
+                            refreshPage();
+                        }
+
+                        button.Click += ButtonClick;
+
+                        // 创建不可修改的文本框
+                        TextBlock NameBlock = new TextBlock
+                        {
+                            Text = $"Page Name: {ItemNow.Name}",
+                            Margin = new Microsoft.UI.Xaml.Thickness(5),
+                            Width = 150,
+                            VerticalAlignment = VerticalAlignment.Center
+                        };
+
+                        Button DeleteButton = new Button
+                        {
+                            Content = "Delete",
+                            Margin = new Microsoft.UI.Xaml.Thickness(5),
+                            VerticalAlignment = VerticalAlignment.Center
+                        };
+
+                        Grid grid = new Grid();
+
+                        // 定义三列，分别用于 TextBox, TextBlock, Button
+                        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) }); // 第1列
+                        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }); // 第2列
+                        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) }); // 第3列
+
                         Grid.SetColumn(NameBlock, 0);
-                        Grid.SetColumn(button, 1);
-                        Grid.SetColumn(DeleteButton, 2);
-
                         grid.Children.Add(NameBlock);
+
+                        Grid.SetColumn(button, 1);
                         grid.Children.Add(button);
+
+                        Grid.SetColumn(DeleteButton, 2);
                         grid.Children.Add(DeleteButton);
+                        
 
                         DeleteButton.Click += (sender, e) =>
                         {
@@ -419,20 +390,15 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                             Information.Children.Remove(grid);
                             Temp_PointInf.deleteItem(ItemNow);
                         };
+
                         Information.Children.Add(grid);
                     }
-                }
-                else
+                    else
                     {
                         Console.WriteLine("Error: Unknown Type");
                     }
                 }
             Item_Add_Button(PageNow);
-        }
-
-        public void PaneClear()
-        {
-            Information.Children.Clear();
         }
 
         // 如果指定了初始化方式
@@ -443,274 +409,306 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
         // 添加 元素添加按钮
         private void Item_Add_Button(Property PageNow)
         {
-            //这里应该是个flyout
-            //选择项目 展开选择行
+            // 新元素
+            
 
-
-            Property newProperty = new Property(null, -1, null, null);
-
-
+            // 扩展边导航栏
             var NaviPivot = new Pivot();
-            NaviPivot.SelectionChanged += (sender, e) => AddItem_Click(sender, e, newProperty);
 
             var expander = new Expander
             {
-                Header = "Add Item",
+                Header = "Add One Item",
                 Content = NaviPivot,
                 Margin = new Microsoft.UI.Xaml.Thickness(5),
                 VerticalAlignment = VerticalAlignment.Center
             };
 
             StackPanel verticalPanelString = new StackPanel();
-            StackPanel verticalPanelPage = new StackPanel();
-            StackPanel verticalPanelEnum = new StackPanel();
-
-
-            TextBox textBox = new TextBox
             {
-                Text = newProperty.Object as string,
-                VerticalAlignment = VerticalAlignment.Center
-            };
+                Property newProperty = new Property(null, -1, null, null);
 
-            textBox.TextChanged += (sender, e) =>
-            {
-                // 更新 newProperty.Name 为 TextBox 的新值
-                newProperty.Object = textBox.Text;
-            };
-
-            verticalPanelString.Children.Add(createProerty(newProperty));
-
-            // 添加分隔线到 StackPanel
-            verticalPanelString.Children.Add(new Line
-            {
-                X1 = 0,
-                X2 = 1,
-                Y1 = 0,
-                Y2 = 0,
-                Stroke = new SolidColorBrush(Microsoft.UI.Colors.Gray),
-                StrokeThickness = 1,
-                HorizontalAlignment = HorizontalAlignment.Stretch
-            });
-            verticalPanelString.Children.Add(textBox);
-
-            Button Save_button = new Button
-            {
-                Content = "Save",
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            Save_button.Click += (sender, e) =>
-            {
-                if (newProperty.Name != null)
+                verticalPanelString.Children.Add(createProerty(newProperty));
+                // 添加分隔线到 StackPanel
+                verticalPanelString.Children.Add(new Line
                 {
-                    newProperty.IndexUpdate();
-                    System.Diagnostics.Debug.WriteLine(newProperty.Index);
+                    X1 = 0,
+                    X2 = 1,
+                    Y1 = 0,
+                    Y2 = 0,
+                    Stroke = new SolidColorBrush(Microsoft.UI.Colors.Gray),
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                });
+                // 添加元素项
 
-                    if (PageNow.Object is List<int> tempList)
-                    {
-                        tempList.Add(newProperty.Index);
-                    }
+                
 
-                    Temp_PointInf.Temp_basicInfo.Add(newProperty.Index, newProperty);
-                    Information.Children.Remove(expander);
-                    refreshPage(PageNow.Index);
-                }
-            };
-
-            verticalPanelString.Children.Add(Save_button);
-
-            var PivotItemString = new PivotItem
-            {
-                Header = "String_Item",
-                Content = verticalPanelString
-            };
-
-            // 创建字符串类型数据塞入缓存区 并加入Enum的Object 并创建一个textbox指向这个数据 最后添加一个新增按钮
-            Button buttonEnum()
-            {
-                Button buttonenum = new Button
+                TextBox textBox = new TextBox
                 {
-                    Content = "Add Enum",
+                    Text = newProperty.Object as string,
                     Margin = new Microsoft.UI.Xaml.Thickness(5),
                     VerticalAlignment = VerticalAlignment.Center
-
                 };
 
-                buttonenum.Click += (sender, e) =>
-                {
-                    verticalPanelEnum.Children.RemoveAt(verticalPanelEnum.Children.Count - 1);
+                verticalPanelString.Children.Add(textBox);
 
-                    Button clickedButton = sender as Button;
-                    verticalPanelEnum.Children.Remove(clickedButton);
-
-                    Property eNumTemp = new Property("NoName", -1, "EnumString", "NULL");
-                    eNumTemp.IndexUpdate();
-                    Temp_PointInf.Temp_basicInfo.Add(eNumTemp.Index, eNumTemp);
-
-                    if (newProperty.Object is List<int> tempEnum)
-                    {
-                        tempEnum.Add(eNumTemp.Index);
-                    };
-
-                    TextBox textBox = new TextBox
-                    {
-                        Text = eNumTemp.Object as string,
-                        Margin = new Microsoft.UI.Xaml.Thickness(5),
-                    };
-
-                    textBox.TextChanged += (sender, e) =>
-                    {
-                        // 更新 newProperty.Name 为 TextBox 的新值
-                        eNumTemp.Object = textBox.Text;
-                    };
-
-                    // 还有删除按钮
-                    Button DeleteEnumItem = new Button
-                    {
-                        Content = "Delete",
-                        Margin = new Microsoft.UI.Xaml.Thickness(5),
-                    };
-
-                    StackPanel horizontalPanel = new StackPanel
-                    {
-                        Orientation = Orientation.Horizontal,
-                        Margin = new Microsoft.UI.Xaml.Thickness(5)
-                    };
-
-                    {
-                        Grid grid = taskforce141();
-                        Grid.SetColumn(textBox, 1);
-                        Grid.SetColumn(DeleteEnumItem, 2);
-
-                        grid.Children.Add(textBox);
-                        grid.Children.Add(DeleteEnumItem);
-
-                        verticalPanelEnum.Children.Add(grid);
-
-                        DeleteEnumItem.Click += (sender, e) =>
-                        {
-                            //选择项目 删掉这行
-                            verticalPanelEnum.Children.Remove(grid);
-                            Temp_PointInf.Temp_basicInfo.Remove(eNumTemp.Index);
-                        };
-                    }
-
-                    verticalPanelEnum.Children.Add(buttonEnum());
-                    verticalPanelEnum.Children.Add(CreateEnumSave());
-                };
-
-                return buttonenum;
-            }
-
-            // 也是还没写 向布局中添加文本框并创建字符串类型数据塞入缓存区
-            
-            verticalPanelEnum.Children.Add(createProerty(newProperty));
-            verticalPanelEnum.Children.Add(new Line
-            {
-                X1 = 0,
-                X2 = 1,
-                Y1 = 0,
-                Y2 = 0,
-                Stroke = new SolidColorBrush(Microsoft.UI.Colors.Gray),
-                StrokeThickness = 1,
-                HorizontalAlignment = HorizontalAlignment.Stretch
-            });
-            verticalPanelEnum.Children.Add(buttonEnum());
-
-            
-            Button CreateEnumSave()
-            {
-                Button EnumSave_button = new Button
+                Button Save_button = new Button
                 {
                     Content = "Save",
                     VerticalAlignment = VerticalAlignment.Center
                 };
 
-                EnumSave_button.Click += (sender, e) =>
+                Save_button.Click += (sender, e) =>
+                {
+                    System.Diagnostics.Debug.WriteLine(newProperty.Name);
+                    if (newProperty.Name != null)
+                    {
+                        // 赋值
+                        newProperty.Object = textBox.Text;
+                        // 更新索引
+                        newProperty.IndexUpdate();
+
+                        // 写入元素到页面索引表
+                        if (PageNow.Object is List<int> tempList)
+                        {
+                            newProperty.Type = "String";
+                            System.Diagnostics.Debug.WriteLine("write in PageNow");
+
+                            // 注册元素
+                            Temp_PointInf.Temp_basicInfo.Add(newProperty.Index, newProperty);
+
+                            tempList.Add(newProperty.Index);
+                        }
+
+                        // 移除添加按钮
+                        Information.Children.Remove(expander);
+                        // 刷新页面
+                        refreshPage();
+                        System.Diagnostics.Debug.WriteLine("sAVED AND REF");
+                    }
+                };
+
+                verticalPanelString.Children.Add(Save_button);
+
+                var PivotItemString = new PivotItem
+                {
+                    Header = "String_Item",
+                    Content = verticalPanelString
+                };
+
+                NaviPivot.Items.Add(PivotItemString);
+            }
+
+            StackPanel verticalPanelEnum = new StackPanel();
+            {
+
+                Property newProperty = new Property(null, -1, null, new List<int>() );
+
+                Button buttonEnum()
+                {
+                    Button buttonenum = new Button
+                    {
+                        Content = "Add Enum",
+                        Margin = new Microsoft.UI.Xaml.Thickness(5),
+                        VerticalAlignment = VerticalAlignment.Center
+
+                    };
+
+                    buttonenum.Click += (sender, e) =>
+                    {
+                        // 删除掉最后一个元素 就是添加按钮
+                        verticalPanelEnum.Children.RemoveAt(verticalPanelEnum.Children.Count - 1);
+
+                        Button clickedButton = sender as Button;
+                        verticalPanelEnum.Children.Remove(clickedButton);
+                        // 新元素 元素类型元素项 无名 空值
+                        Property eNumTemp = new Property(null, -1, "EnumItem", "NULL");
+
+                        // 更新索引
+                        eNumTemp.IndexUpdate();
+
+                        // 注册元素
+                        Temp_PointInf.Temp_basicInfo.Add(eNumTemp.Index, eNumTemp);
+
+                        if (newProperty.Object is List<int> tempEnum)
+                        {
+                            tempEnum.Add(eNumTemp.Index);
+                        };
+
+                        TextBox textBox = new TextBox
+                        {
+                            Text = eNumTemp.Object as string,
+                            Margin = new Microsoft.UI.Xaml.Thickness(5),
+                        };
+
+                        textBox.TextChanged += (sender, e) =>
+                        {
+                            // 更新 newProperty.Name 为 TextBox 的新值
+                            eNumTemp.Object = textBox.Text;
+                        };
+
+                        // 还有删除按钮
+                        Button DeleteEnumItem = new Button
+                        {
+                            Content = "Delete",
+                            Margin = new Microsoft.UI.Xaml.Thickness(5),
+                        };
+
+                        StackPanel horizontalPanel = new StackPanel
+                        {
+                            Orientation = Orientation.Horizontal,
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
+
+                        {
+                            Grid grid = taskforce141(null,textBox,DeleteEnumItem);
+
+                            verticalPanelEnum.Children.Add(grid);
+
+                            DeleteEnumItem.Click += (sender, e) =>
+                            {
+                                //选择项目 删掉这行
+                                verticalPanelEnum.Children.Remove(grid);
+                                Temp_PointInf.Temp_basicInfo.Remove(eNumTemp.Index);
+                            };
+                        }
+
+                        verticalPanelEnum.Children.Add(buttonEnum());
+                        verticalPanelEnum.Children.Add(CreateEnumSave());
+                    };
+
+                    return buttonenum;
+                }
+
+                // 也是还没写 向布局中添加文本框并创建字符串类型数据塞入缓存区
+
+                verticalPanelEnum.Children.Add(createProerty(newProperty));
+
+                verticalPanelEnum.Children.Add(new Line
+                {
+                    X1 = 0,
+                    X2 = 1,
+                    Y1 = 0,
+                    Y2 = 0,
+                    Stroke = new SolidColorBrush(Microsoft.UI.Colors.Gray),
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                });
+
+                verticalPanelEnum.Children.Add(buttonEnum());
+
+
+                Button CreateEnumSave()
+                {
+                    Button EnumSave_button = new Button
+                    {
+                        Content = "Save",
+                        VerticalAlignment = VerticalAlignment.Center
+                    };
+
+                    EnumSave_button.Click += (sender, e) =>
+                    {
+                        if (newProperty.Name != null)
+                        {
+                            newProperty.Type = "EnumList";
+
+                            newProperty.IndexUpdate();
+
+                            // 枚举选择项
+                            Property eNumSelectTemp = new Property(null, -1, "EnumItem", "No Set");
+                            eNumSelectTemp.IndexUpdate();
+
+                            // 真正的枚举项
+                            Property TrueeNum = new Property(
+                                newProperty.Name, -1, "Enum", 
+                                new List<int>(){ eNumSelectTemp.Index, newProperty.Index});
+
+                            TrueeNum.IndexUpdate();
+
+                            // 放到页面索引表中
+                            if (PageNow.Object is List<int> tempList)
+                            {
+                                tempList.Add(TrueeNum.Index);
+                            }
+                            // 注册枚举和枚举选择项以及枚举
+                            Temp_PointInf.Temp_basicInfo.Add(eNumSelectTemp.Index, eNumSelectTemp);
+                            Temp_PointInf.Temp_basicInfo.Add(TrueeNum.Index, TrueeNum);
+                            Temp_PointInf.Temp_basicInfo.Add(newProperty.Index, newProperty);
+
+                            Information.Children.Remove(expander);
+                            refreshPage();
+                        }
+                    };
+                    return EnumSave_button;
+                }
+
+                verticalPanelEnum.Children.Add(CreateEnumSave());
+
+                var PivotItemEnum = new PivotItem
+                {
+                    Header = "Enum",
+                    Content = verticalPanelEnum
+                };
+                NaviPivot.Items.Add(PivotItemEnum);
+
+            }
+
+            StackPanel verticalPanelPage = new StackPanel();
+            {
+                Property newProperty = new Property(null, -1, null, new List<int>() );
+
+                verticalPanelPage.Children.Add(createProerty(newProperty));
+
+                verticalPanelPage.Children.Add(new Line
+                {
+                    X1 = 0,
+                    X2 = 1,
+                    Y1 = 0,
+                    Y2 = 0,
+                    Stroke = new SolidColorBrush(Microsoft.UI.Colors.Gray),
+                    StrokeThickness = 1,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                });
+
+                Button buttonPage = new Button
+                {
+                    Content = "Add Page",
+                    Margin = new Microsoft.UI.Xaml.Thickness(5),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+
+                buttonPage.Click += (sender, e) =>
                 {
                     if (newProperty.Name != null)
                     {
+                        newProperty.Type = "Page";
                         newProperty.IndexUpdate();
-
-                        // 枚举选择项
-                        Property eNumSelectTemp = new Property("NoName", -1, "String", "No Set");
-                        // 从枚举列表中获取一个作为初始值
-                        eNumSelectTemp.IndexUpdate();
-                        // 真正的枚举项
-                        Property TrueeNum = new Property(newProperty.Name, -1, "Enum", new List<int>()
-                        { eNumSelectTemp.Index, newProperty.Index});
-
-                        TrueeNum.IndexUpdate();
 
                         if (PageNow.Object is List<int> tempList)
                         {
-                            tempList.Add(TrueeNum.Index);
+                            tempList.Add(newProperty.Index);
                         }
-
-                        Temp_PointInf.Temp_basicInfo.Add(eNumSelectTemp.Index, eNumSelectTemp);
-                        Temp_PointInf.Temp_basicInfo.Add(TrueeNum.Index, TrueeNum);
 
                         Temp_PointInf.Temp_basicInfo.Add(newProperty.Index, newProperty);
                         Information.Children.Remove(expander);
-                        refreshPage(PageNow.Index);
+                        refreshPage();
                     }
                 };
-                return EnumSave_button;
-            }
 
-            verticalPanelEnum.Children.Add(CreateEnumSave());
+                verticalPanelPage.Children.Add(buttonPage);
 
-            var PivotItemEnum = new PivotItem
-            {
-                Header = "Enum",
-                Content = verticalPanelEnum
-            };
-
-            // 一个确认按钮 是否创建新页面 确定了则创建新页面加入原有的Page中
-            Button buttonPage = new Button
-            {
-                Content = "Add Page",
-                Margin = new Microsoft.UI.Xaml.Thickness(5),
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            buttonPage.Click += (sender, e) =>
-            {
-                if (newProperty.Name != null)
+                var PivotItemPage = new PivotItem
                 {
-                    newProperty.IndexUpdate();
-                    PageNow.Object.As<List<int>>().Add(newProperty.Index);
-                    Temp_PointInf.Temp_basicInfo.Add(newProperty.Index, newProperty);
-                    Information.Children.Remove(expander);
-                    refreshPage(PageNow.Index);
-                }
-            };
+                    Header = "Page",
+                    Content = verticalPanelPage
+                };
 
-            verticalPanelPage.Children.Add(createProerty(newProperty));
-            verticalPanelPage.Children.Add(new Line
-            {
-                X1 = 0,
-                X2 = 1,
-                Y1 = 0,
-                Y2 = 0,
-                Stroke = new SolidColorBrush(Microsoft.UI.Colors.Gray),
-                StrokeThickness = 1,
-                HorizontalAlignment = HorizontalAlignment.Stretch
-            });
-            verticalPanelPage.Children.Add(buttonPage);
-
-            var PivotItemPage = new PivotItem
-            {
-                Header = "Page",
-                Content = verticalPanelPage
-            };
-
-            NaviPivot.Items.Add(PivotItemString);
-            NaviPivot.Items.Add(PivotItemEnum);
-            NaviPivot.Items.Add(PivotItemPage);
+                NaviPivot.Items.Add(PivotItemPage);
+            }
 
             Information.Children.Add(expander);
         }
+
 
         private StackPanel createProerty(Property newProperty)
         {
@@ -725,6 +723,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 Text = "Name : ",
                 VerticalAlignment = VerticalAlignment.Center
             };
+
             TextBox textBoxName = new TextBox
             {
                 Text = newProperty.Name,
@@ -739,7 +738,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
 
             TextBlock textBlockIndex = new TextBlock
             {
-                Text = $"Index : ",
+                Text = "Index : ",
                 VerticalAlignment = VerticalAlignment.Center
             };
 
@@ -750,72 +749,15 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             };
 
             {
-                Grid grid = taskforce141();
-                Grid.SetColumn(textBlockName, 0);
-                Grid.SetColumn(textBoxName, 1);
-                grid.Children.Add(textBlockName);
-                grid.Children.Add(textBoxName);
-                verticalPanel.Children.Add(grid);
-            }
+                Grid grid = taskforce141(textBlockName,textBoxName,null);
 
-            {
-                Grid grid = taskforce141();
-                Grid.SetColumn(textBlockIndex, 0);
-                Grid.SetColumn(textIndex, 1);
-                grid.Children.Add(textBlockIndex);
-                grid.Children.Add(textIndex);
                 verticalPanel.Children.Add(grid);
             }
 
             return verticalPanel;
         }
 
-        private void AddItem_Click(object sender, SelectionChangedEventArgs e, Property newProperty)
-        {
-            var pivot = sender as Pivot;
-            if (pivot != null)
-            {
-                // 获取当前选中的项
-                var selectedItem = pivot.SelectedItem as PivotItem;
 
-                if (selectedItem != null)
-                {
-                    // 根据 Header 修改 myTextBlock 的值
-                    switch (selectedItem.Header.ToString())
-                    {
-                        case "String_Item":
-                            newProperty.Type = "String";
-                            newProperty.Object = "New String";
-                            break;
-                        case "Enum":
-                            newProperty.Type = "Enum";
-                            newProperty.Object = new List<int>();
-                            break;
-                        case "Page":
-                            newProperty.Type = "Page";
-                            newProperty.Object = new List<int>();
-                            // 确认按钮 创建新页面并跳转到新页面 同时旧页面保存到缓存区
-                            break;
-                    }
-                }
-            }
-        }
-
-        private Button Item_Update_Button(StackPanel horizontalPanel)
-        {
-            Button UpdateButton = new Button
-            {
-                Content = "Update",
-                Margin = new Microsoft.UI.Xaml.Thickness(5),
-            };
-            void UpdateButtonClick(object sender, RoutedEventArgs e)
-            {
-                //选择项目 更新这行
-            }
-            UpdateButton.Click += UpdateButtonClick;
-            Information.Children.Add(UpdateButton);
-            return UpdateButton;
-        }
 
         private void PageView(Property EnumNow, ListViewItem listViewItem)
         {
@@ -830,15 +772,33 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
 
             // 在当前元素处显示 Flyout
             flyout.ShowAt(listViewItem);
-            
         }
+
+        public void PaneClear()
+        {
+            PointInfFrame.Temp_PointInf.clear();
+            Information.Children.Clear();
+        }
+
+
+        // 底部四个按钮
 
         private void SavePoint_Click(object sender, RoutedEventArgs e)
         {
-            pointInfSelect().isTemp = false;
+            if(pointInfSelect().isTemp == false)
+            {
+                // 永久点的保存则为更新
+                pointInfSelect().updated = true;
+            }
+            else
+            {
+                // 暂时点的保存则转为永久点
+                pointInfSelect().isTemp = false;
+            }
+
+            // 暂时点确认 合并到更新列表 清空缓存区
             Temp_PointInf.Temp_Point = pointInfSelect();
             Update_PointInf.merge(Temp_PointInf);
-
             Temp_PointInf.clear();
             // 保存数据到更新请求列表
         }
@@ -848,25 +808,71 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             Temp_PointInf.clear();
             _mapFrameLogic.releasePoint();
             _mapFrameLogic.rightPaneControl();
-            // 退出不保存 放弃本点更改
+            // 退出不保存 放弃本点更改 释放点 释放侧面板
         }
 
         private void ExpPoint_Clock(object sender, RoutedEventArgs e)
         {
             _mapFrameLogic.paneExp();
-            // 删除这个点
+            // 扩展面板
+        }
+
+        private void DeletePoint_Clock(object sender, RoutedEventArgs e)
+        {
+            // 地图上删除点 确认点删除
+            if (pointInfSelect().isTemp == true)
+            {
+                // 不是永久点 释放
+                _mapFrameLogic.RemovePoint();
+            }
+            else
+            {
+                // 是永久点 删除
+                _mapFrameLogic.RemovePoint();
+                pointInfSelect().deleted = true;
+                Temp_PointInf.Temp_Point = pointInfSelect();
+                Update_PointInf.remove(Temp_PointInf);
+            }
         }
 
         public void GetMapFrame(GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame mapFrameLogic)
         {
             _mapFrameLogic = mapFrameLogic;
         }
-        private Grid taskforce141()
+
+
+        // 用于创建Item 的 Grid
+        private Grid taskforce141(TextBlock textBlock, TextBox textBox, Button button)
         {
+            // 创建一个新的 Grid
             Grid grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // 第1列
+
+            // 定义三列，分别用于 TextBox, TextBlock, Button
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) }); // 第1列
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }); // 第2列
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) }); // 第3列
+
+            // 自动识别并添加 TextBox 到 Grid 的第2列
+            if (textBlock != null)
+            {
+                Grid.SetColumn(textBlock, 0);
+                grid.Children.Add(textBlock);
+            }
+
+            // 自动识别并添加 TextBlock 到 Grid 的第1列
+            if (textBox != null)
+            {
+                Grid.SetColumn(textBox, 1);
+                grid.Children.Add(textBox);
+            }
+
+            // 自动识别并添加 Button 到 Grid 的第3列
+            if (button != null)
+            {
+                Grid.SetColumn(button, 2);
+                grid.Children.Add(button);
+            }
+
             return grid;
         }
     }

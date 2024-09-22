@@ -22,7 +22,15 @@
         
             <!-- ListView 显示地图列表 -->
         <ListView Grid.Column="0" x:Name="MapListView" Margin="10" SelectionChanged="MapListView_SelectionChanged">
-                <!-- 示例数据项 -->
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="MinWidth" Value="200"/>
+                    <Setter Property="Padding" Value="10,5"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+            
+            <!-- 示例数据项 -->
         </ListView>
         
 
@@ -31,7 +39,7 @@
         x:Name="InfoPanelSplitView" 
         Grid.Column="1" 
         DisplayMode="CompactOverlay" 
-        IsPaneOpen="False"
+        IsPaneOpen="True"
         CompactPaneLength="0"
         OpenPaneLength="300">
 
