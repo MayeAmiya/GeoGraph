@@ -26,6 +26,7 @@ using Microsoft.UI.Xaml.Documents;
 using System.Reflection;
 using WinRT;
 using Microsoft.UI.Xaml.Shapes;
+using Windows.Storage;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -49,6 +50,8 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             Update_PointInf = Assets._Update_PointInf;
             Temp_PointInf = Assets._Temp_PointInf;
 
+            Breadcrumbs.Clear();
+
         }
         GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame _mapFrameLogic;
         // 本组点信息
@@ -57,6 +60,42 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
         public static PointInfTemp Temp_PointInf;
 
         public Property PageNow;
+
+        public readonly struct Crumb
+        {
+            public Crumb(String label, int pageIndex)
+            {
+                Label = label;
+                PageIndex = pageIndex;
+            }
+            public string Label { get; }
+            public int PageIndex { get; }
+            public override string ToString() => Label;
+        }
+
+        ObservableCollection<object> Breadcrumbs =
+                        new ObservableCollection<object>();
+
+
+        private void BreadcrumbBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
+        {
+            if (args.Index < Breadcrumbs.Count - 1)
+            {
+             
+                var crumb = (Crumb)args.Item;
+                setPage(crumb.PageIndex);
+
+                while (Breadcrumbs.Count > args.Index + 1)
+                {
+                    Breadcrumbs.RemoveAt(Breadcrumbs.Count - 1);
+                }
+
+                refreshPage();
+            }
+        }
+
+
+
         // 最重要的部分
         private Property find(int Index)
         {
@@ -89,6 +128,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
 
             PageNow = find(Index);
             Temp_PointInf.Temp_Page = PageNow;
+
         }
 
         public void refreshPage()
@@ -127,6 +167,12 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                     {
                         // 更新 newProperty.Name 为 TextBox 的新值
                         PageNow.Name = textBoxName.Text;
+
+                        if (Breadcrumbs.Count > 0)
+                        {
+                            Breadcrumbs.RemoveAt(Breadcrumbs.Count - 1);
+                            Breadcrumbs.Add(new Crumb(PageNow.Name, PageNow.Index));
+                        }
                     };
 
                     {
@@ -345,6 +391,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                         void ButtonClick(object sender, RoutedEventArgs e)
                         {
                             Information.Children.Clear();
+                            Breadcrumbs.Add(new Crumb(ItemNow.Name, ItemNow.Index));
                             setPage(ItemNow.Index);
                             refreshPage();
                         }
@@ -778,6 +825,11 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
         {
             PointInfFrame.Temp_PointInf.clear();
             Information.Children.Clear();
+        }
+        public void PaneStart()
+        {
+            Breadcrumbs.Clear();
+            Breadcrumbs.Add(new Crumb(PageNow.Name, PageNow.Index));
         }
 
 

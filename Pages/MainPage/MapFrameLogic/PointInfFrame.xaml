@@ -32,9 +32,10 @@
 
         <!-- 导航区域 -->
         <ScrollViewer x:Name="NavigationScrollViewer" Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-            <StackPanel x:Name="NavigationStackPanel" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
-                
-            </StackPanel>
+            <BreadcrumbBar x:Name="PageBreadcrumbs"
+                             ItemsSource="{x:Bind Breadcrumbs}"
+                             ItemClicked="BreadcrumbBar_ItemClicked">
+            </BreadcrumbBar>
         </ScrollViewer>
 
         <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="0,1,0,0" />

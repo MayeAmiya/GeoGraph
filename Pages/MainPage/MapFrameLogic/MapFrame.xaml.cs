@@ -219,6 +219,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             _selectedPoint.Fill = new SolidColorBrush(Microsoft.UI.Colors.Blue);
             // C#的class 一般都是引用 所以这里直接强转类型然后改就行
             pointInfFramePage.setPage(pointInfSelect().pointInfCode);
+            pointInfFramePage.PaneStart();
             pointInfFramePage.refreshPage();
             MainSplitView.IsPaneOpen = true;
             
