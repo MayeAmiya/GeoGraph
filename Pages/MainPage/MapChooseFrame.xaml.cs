@@ -41,6 +41,9 @@ namespace GeoGraph.Pages.MainPage
             public string ImagePath;
             public string MapInf;
             public int MapCode;
+            public int MapRank;
+            public bool Changed;
+            public bool Deleted;
 
             // struct is deep copy
 
@@ -52,6 +55,7 @@ namespace GeoGraph.Pages.MainPage
                 ImagePath = temp.ImagePath;  
                 MapInf = temp.MapInf;
                 MapCode = temp.MapCode;
+                MapRank = temp.MapRank;
 
             }
 
@@ -63,6 +67,7 @@ namespace GeoGraph.Pages.MainPage
                 this.ImagePath = ImagePath;
                 this.MapInf = MapInf;
                 this.MapCode = MapCode;
+                this.MapRank = 0;
             }
 
         }
@@ -83,8 +88,7 @@ namespace GeoGraph.Pages.MainPage
         public void GetMapInfo()
         {
             System.Diagnostics.Debug.WriteLine("mapinfosHere");
-            Assets.ParseMapInfAsync();
-            mapinfos = GeoGraph.Network.Assets.MapList;
+            mapinfos = GeoGraph.Network.Map.MapList;
             if(mapinfos is null)
             {
                 System.Diagnostics.Debug.WriteLine("mapinfos is null");
@@ -205,8 +209,6 @@ namespace GeoGraph.Pages.MainPage
         {
             // 添加地图信息到列表
 
-
-
             // 检查用户权限组
 
 
@@ -310,6 +312,28 @@ namespace GeoGraph.Pages.MainPage
                             AcceptsReturn = true, // 允许回车换行
                         };
 
+                        TextBlock textBlockRank = new TextBlock()
+                        {
+                            Text = "MapRank :",
+                            FontSize = 16, // 设置字体大小
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
+
+                        TextBox textRank = new TextBox
+                        {
+                            Text = "0",
+                            FontSize = 16, // 设置字体大小
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
+
+                        textRank.TextChanged += (sender, e) =>
+                        {
+                            if(int.TryParse(textRank.Text, out int rank))
+                            {
+                                if(rank <= Network.Connect._userRank)
+                                mapInfotemp.MapRank = Network.Connect._userRank;
+                            }
+                        };
                         Button imageButton = new Button
                         {
                             Content = "Choose Image",
@@ -404,9 +428,11 @@ namespace GeoGraph.Pages.MainPage
                                     mapinfos.Add(mapInfotemp);
                                     // 刷新地图列表
                                     mapinfos.Remove(selectedMap);
-                                    GeoGraph.Network.Update.UpdateMap(mapInfotemp);
+                                    GeoGraph.Network.UpdateMap.AddMapList(mapInfotemp);
                                     InitializeMapListView();
                                     MapListView_SelectionChanged(selectedItem, null);
+                                    mapInfotemp.Changed = true;
+                                    UpdateMap.AddMapList(mapInfotemp);
                                     MapChoosed(mapInfotemp);
                                 }
                             }
@@ -521,6 +547,12 @@ namespace GeoGraph.Pages.MainPage
                             Margin = new Microsoft.UI.Xaml.Thickness(5)
                         };
 
+                        Button deleteButton = new Button()
+                        {
+                            Content = "Delete",
+                            Margin = new Microsoft.UI.Xaml.Thickness(5)
+                        };
+
                         copyButton.Click += (sender, e) =>
                         {
                             mapInfotemp.MapName = textBlockName.Text;
@@ -528,12 +560,25 @@ namespace GeoGraph.Pages.MainPage
                             // 保存地图信息
                             // 
                             mapinfos.Add(mapInfotemp);
+                            mapInfotemp.Changed = true;
+                            UpdateMap.AddMapList(mapInfotemp);
                             // 刷新地图列表
                             InitializeMapListView();
                         };
 
                         chooseButton.Click += (sender, e) => MapChoosed(selectedMap);
 
+                        deleteButton.Click += (sender, e) =>
+                        {
+                            if(Network.Connect._userRank>= selectedMap.MapRank)
+                            {
+                                selectedMap.Deleted = true;
+                                UpdateMap.AddMapList(selectedMap);
+                                mapinfos.Remove(selectedMap);
+
+                                InitializeMapListView();
+                            }
+                        };
                         // StackPanel 添加到布局中
                         MapListViewInf.Children.Add(stackPanelImage);
                         MapListViewInf.Children.Add(stackPanelName);
@@ -548,10 +593,14 @@ namespace GeoGraph.Pages.MainPage
             }
         }
 
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
 
         public void MapChoosed(MapInfo MapChoosedNow)
         {
-            Assets.GetPoints(MapChoosedNow);
+            Map.GetPoints(MapChoosedNow);
 
             // 取得初始点集 建立 初始点集 更新点集 暂存点 
             Master.NavigateTo(typeof(GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame));

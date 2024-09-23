@@ -19,7 +19,7 @@ using static GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame;
 using static GeoGraph.Pages.MainPage.MapFrameLogic.PointInfFrame;
 
 using static GeoGraph.Network.PointInf;
-using static GeoGraph.Network.Update;
+
 using System.Runtime.CompilerServices;
 using Windows.Devices.Enumeration;
 using Microsoft.UI.Xaml.Documents;
@@ -56,7 +56,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
         GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame _mapFrameLogic;
         // 本组点信息
         public static PointInf Basic_PointInf;
-        public static Update Update_PointInf;
+        public static UpdatePoints Update_PointInf;
         public static PointInfTemp Temp_PointInf;
 
         public Property PageNow;
@@ -105,14 +105,14 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 Now = Temp_PointInf.Temp_basicInfo[Index];
                 return Now;
             }
-            else if (Update_PointInf.Update_basicInfo.ContainsKey(Index))
+            else if (UpdatePoints.Update_basicInfo.ContainsKey(Index))
             {
-                Now = Update_PointInf.Update_basicInfo[Index];
+                Now = UpdatePoints.Update_basicInfo[Index];
                 return Now;
             }
-            else if (Basic_PointInf.basicInfo.ContainsKey(Index))
+            else if (PointInf.basicInfo.ContainsKey(Index))
             {
-                Now = Basic_PointInf.basicInfo[Index];
+                Now = PointInf.basicInfo[Index];
                 return Now;
             }
             else 
@@ -850,7 +850,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
 
             // 暂时点确认 合并到更新列表 清空缓存区
             Temp_PointInf.Temp_Point = pointInfSelect();
-            Update_PointInf.merge(Temp_PointInf);
+            UpdatePoints.merge(Temp_PointInf);
             Temp_PointInf.clear();
             // 保存数据到更新请求列表
         }
@@ -883,7 +883,7 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 _mapFrameLogic.RemovePoint();
                 pointInfSelect().deleted = true;
                 Temp_PointInf.Temp_Point = pointInfSelect();
-                Update_PointInf.remove(Temp_PointInf);
+                UpdatePoints.remove(Temp_PointInf);
             }
         }
 

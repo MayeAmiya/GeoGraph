@@ -60,13 +60,13 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
         private void InitializeMap()
         {
             // 初始化Canvas大小
-            MainCanvas.Width = Assets._MapInfo.Width;
-            MainCanvas.Height = Assets._MapInfo.Height;
+            MainCanvas.Width =Map._MapInfo.Width;
+            MainCanvas.Height = Map._MapInfo.Height;
             // 初始化Map图像
-            BitmapImage bitmapImage = new BitmapImage(new Uri(Assets._MapInfo.ImagePath));
+            BitmapImage bitmapImage = new BitmapImage(new Uri(Map._MapInfo.ImagePath));
             Image.Source = bitmapImage;
             // 同时在Assets初始化PointInf和Update的数据 根据地图类型直接引用
-            originalPositions = Assets._Basic_PointInf.basePoints;
+            originalPositions = PointInf.basePoints;
         }
 
 

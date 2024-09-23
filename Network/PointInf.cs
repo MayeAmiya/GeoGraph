@@ -105,12 +105,17 @@ namespace GeoGraph.Network
     {
         private static NetworkClient _client;
         public static string MapName;
+        public static void PointInfInit(string mapname)
+        {
+            MapName = mapname;
+            ParsePointInfAsync();
+        }
         // 在选择地图后初始化 所以这里应当在Assets中初始化
-        public PointInf(string mapname)
+        public PointInf()
         {
             _client = MainWindow._NetworkClient;
 
-            MapName = mapname;
+            MapName = null;
             basePoints = new List<BasePoint>();
 
             basicInfo = new Dictionary<int, Property>();
@@ -118,13 +123,13 @@ namespace GeoGraph.Network
             PageInfo = new Dictionary<string, Property>();
         }
         // 点信息列表
-        public List<BasePoint> basePoints;
+        public static List<BasePoint> basePoints;
         // 属性列表
-        public Dictionary<int, Property> basicInfo;
-        public Dictionary<string, Property> EnumInfo;
-        public Dictionary<string, Property> PageInfo;
+        public static Dictionary<int, Property> basicInfo;
+        public static Dictionary<string, Property> EnumInfo;
+        public static Dictionary<string, Property> PageInfo;
         // 从服务器获取点信息 主表
-        public async void ParsePointInfAsync()
+        public static async void ParsePointInfAsync()
         {
             //这时候要考虑服务器送的数据格式
             //是一个Json 包含一大堆数据 有普通数据类型 也可能是列表
@@ -154,14 +159,14 @@ namespace GeoGraph.Network
                 // 页面索引值
                 var PointInfCode = point.GetProperty("PointInfCode").GetInt32();
 
-                basePoints.Add(new BasePoint(location, PointInfCode));
+                PointInf.basePoints.Add(new BasePoint(location, PointInfCode));
                 await ParsePropertyInfAsync(PointInfCode);
             }
 
         }
 
         // 从服务器获取属性信息 从表
-        public async Task<bool> ParsePropertyInfAsync(int requestIndex)
+        public static async Task<bool> ParsePropertyInfAsync(int requestIndex)
         {
             string requestInfo;
             //我们需要再次考虑服务器的数据类型 我们可以假定服务器的每个值都是固定的 而服务器在搜索后返回我们需要的宽域内容
@@ -245,7 +250,7 @@ namespace GeoGraph.Network
          * 每一个项都有一个外键绑定指向一个BasePoint或一个Page 而Page外键绑定指向BasePoint或Page 并且要检查避免循环依赖
          */
         // 获取值
-        public async void GetValue(int index)
+        public static async void GetValue(int index)
         {
             // 这里传入的是PageInfCode 我们要从PointInf中获取
             // 这个类每次更换点都会刷新 所以独立出来
@@ -270,9 +275,10 @@ namespace GeoGraph.Network
         public PointInf _pointinf;
         public Property Temp_Page;
         public BasePoint Temp_Point;
-        public PointInfTemp(PointInf pointinf)
+
+        public PointInfTemp()
         {
-            _pointinf = pointinf;
+            _pointinf = Assets._Basic_PointInf;
             Temp_basicInfo = new Dictionary<int, Property>();
             Temp_EnumInfo = new Dictionary<string, Property>();
             Temp_PageInfo = new Dictionary<string, Property>();
@@ -305,7 +311,7 @@ namespace GeoGraph.Network
             if(!Temp_basicInfo.ContainsKey(index))
             {
                 // 如果是原有的点信息 那么只需要打上删除标记 并且加入到本次更改列表
-                var existingProperty = _pointinf.basicInfo[index];
+                var existingProperty = PointInf.basicInfo[index];
                 existingProperty.deleted = true;
                 Temp_basicInfo.Add(index, existingProperty);
             }

@@ -4,28 +4,29 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Windows.Media.Protection.PlayReady;
 
 namespace GeoGraph.Network
 {
     public class Connect
     {
-        private static string _username;
-        private static string _password;
-        private static NetworkClient _client;
-        //用户名和密码用作第一次登录校验 之后用token
-        private static string _token;
-        private static string _permission;
-        private static string _userInfo;
-        private static string _userRank;
-        private static bool _isLogin;
+        public static string _username;
+        public static string _password;
+        public static NetworkClient _client;
+
+        public static string _token;
+        public static string _permission;
+        public static string _userInfo;
+        public static int _userRank;
+        public static bool _isLogin;
         public Connect()
         {
             _token = null;
             // 引用一个NetworkClient对象
             _client = MainWindow._NetworkClient;
         }
-
-        public async Task<string> AttemptLoginAsync(string username, string password)
+        // 登录
+        public static async Task<string> AttemptLoginAsync(string username, string password)
         {
             try
             {
@@ -62,8 +63,8 @@ namespace GeoGraph.Network
                 return null;
             }
         }
-
-        public async Task<string> AttemptRegisterAsync(string username, string password)
+        // 注册
+        public static async Task<string> AttemptRegisterAsync(string username, string password)
         {
             try
             {
@@ -100,10 +101,50 @@ namespace GeoGraph.Network
                 return null;
             }
         }
+        // 重设密码
+        public static async Task<string> AttemptReSetAsync(string password)
+        {
+            try
+            {
+                if (_client == null)
+                    return null;
+                // 密码哈希处理后再发送 在后端比对 不需要解密
+                // 这里组成JSON
 
+                // 创建注册组的hashcode
+                HashCode hashCode = new HashCode();
+                hashCode.Add(_username);
+                hashCode.Add(password);
+                int combinedHash = hashCode.ToHashCode();
+
+                var resetData = new
+                {
+                    command = "resetpassword",
+                    user = _username,
+                    hash = combinedHash
+                };
+
+                string jsonString = JsonSerializer.Serialize(resetData);
+
+                // 发送JSON
+                string _ret = await _client.SendMessageAsync(jsonString);
+
+                // 在这里处理注册结果
+                return _ret;
+            }
+            catch (Exception ex)
+            {
+                // 处理异常情况
+                Console.WriteLine($"Error during register: {ex.Message}");
+                return null;
+            }
+        }
+        
+
+        // 祝贺
         public static string Greeting()
         {
-            if(_isLogin)
+            if (_isLogin)
                 return _userRank + " " + _username;
             else
                 return "DisConnected";

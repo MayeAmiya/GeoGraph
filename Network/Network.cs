@@ -16,12 +16,13 @@ namespace GeoGraph.Network
         private string _ipAddress;
         private int _port;
         private int recoonectTimes;
+        private string _token;
 
         public NetworkClient()
         {
             _client = null;
             _stream = null;
-
+            _token = Connect._token;
             _ipAddress = null;
             _port = -1;
 
@@ -29,7 +30,6 @@ namespace GeoGraph.Network
 
             _ = ConnectAsync(App._IP, App._Port);
         }
-
 
         private async Task<bool> ConnectAsync(string ipAddress, int port)
         {

@@ -35,13 +35,13 @@ namespace GeoGraph.Pages.MainPage
         }
 
         public static PointInf _Basic_PointInf;
-        public static Update _Update_PointInf;
+        public static UpdatePoints _Update_PointInf;
 
         // 这里要得到什么 要得到updatepointinf 和 pointinf 然后遍历updatepointinf 对其中的point先遍历
         // 然后得到pointcode 再陈列
         public void diff_display()
         {
-            foreach (BasePoint temp in _Update_PointInf.Update_basePoints)
+            foreach (BasePoint temp in UpdatePoints.Update_basePoints)
             {
                 // 这里要显示删除的点
                 // 每个点都创建一个块 塞入stackpanel
@@ -88,11 +88,11 @@ namespace GeoGraph.Pages.MainPage
 
         public Grid find_diff(int Index)
         {
-            if(_Update_PointInf.Update_basicInfo.ContainsKey(Index))
+            if(UpdatePoints.Update_basicInfo.ContainsKey(Index))
             {
                 // 这里要显示更新的点
                 // 每个点都创建一个块 塞入stackpanel
-                var temp = _Update_PointInf.Update_basicInfo[Index];
+                var temp = UpdatePoints.Update_basicInfo[Index];
                 StackPanel _stackPanel = new StackPanel();
                 TextBlock textBlockType = new TextBlock();
                 switch (temp.Type){
@@ -101,10 +101,10 @@ namespace GeoGraph.Pages.MainPage
                         textBlockType.Text = "Type -> String";
                         _stackPanel.Children.Add(textBlockType);
 
-                        if (_Basic_PointInf.basicInfo.ContainsKey(Index))
+                        if (PointInf.basicInfo.ContainsKey(Index))
                         {
                             // 存在则是更改
-                            var original = _Basic_PointInf.basicInfo[Index];
+                            var original = PointInf.basicInfo[Index];
                             _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Yellow);
                             TextBlock textBlock = new TextBlock();
                             textBlock.Text = "Updated Item Name : " + temp.Name + " Value : " + temp.Object as string;
@@ -128,20 +128,20 @@ namespace GeoGraph.Pages.MainPage
                         textBlockType.Text = "Type -> Enum";
                         _stackPanel.Children.Add(textBlockType);
                         List<int> tuple = temp.Object as List<int>;
-                        if (_Basic_PointInf.basicInfo.ContainsKey(Index))
+                        if (PointInf.basicInfo.ContainsKey(Index))
                         {
                             // 存在则是更改
-                            var original = _Basic_PointInf.basicInfo[Index];
+                            var original = PointInf.basicInfo[Index];
 
                             _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Yellow);
 
                             TextBlock textBlock = new TextBlock();
 
-                            List<int> oldtuple = _Basic_PointInf.basicInfo[Index].Object as List<int>;
+                            List<int> oldtuple = PointInf.basicInfo[Index].Object as List<int>;
 
-                            textBlock.Text = "Updated Enum Name : " + temp.Name + " " + _Update_PointInf.Update_basicInfo[tuple[0]].Object as string;
+                            textBlock.Text = "Updated Enum Name : " + temp.Name + " " + UpdatePoints.Update_basicInfo[tuple[0]].Object as string;
                             TextBlock textBlockOriginal = new TextBlock();
-                            textBlockOriginal.Text = "Original Enum Name : " + original.Name + " Value : " + _Basic_PointInf.basicInfo[oldtuple[0]].Object as string;
+                            textBlockOriginal.Text = "Original Enum Name : " + original.Name + " Value : " + PointInf.basicInfo[oldtuple[0]].Object as string;
                             _stackPanel.Children.Add(textBlock);
                             _stackPanel.Children.Add(textBlockOriginal);
                         }
@@ -150,7 +150,7 @@ namespace GeoGraph.Pages.MainPage
                             // 不存在则是添加
                             _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Green);
                             TextBlock textBlock = new TextBlock();
-                            textBlock.Text = "Added Enum Name : " + temp.Name + " Value : " + _Update_PointInf.Update_basicInfo[tuple[0]] as string;
+                            textBlock.Text = "Added Enum Name : " + temp.Name + " Value : " + UpdatePoints.Update_basicInfo[tuple[0]] as string;
                             _stackPanel.Children.Add(textBlock);
                         }
                         break;
@@ -159,9 +159,9 @@ namespace GeoGraph.Pages.MainPage
                         // Page 要递归啦！
                         textBlockType.Text = "Type -> Page";
                         _stackPanel.Children.Add(textBlockType);
-                        if (_Basic_PointInf.basicInfo.ContainsKey(Index))
+                        if (PointInf.basicInfo.ContainsKey(Index))
                         {
-                            var original = _Basic_PointInf.basicInfo[Index];
+                            var original = PointInf.basicInfo[Index];
 
                             _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Yellow);
                             TextBlock textBlock = new TextBlock();
@@ -212,7 +212,7 @@ namespace GeoGraph.Pages.MainPage
         public void Update_Click(object sender, RoutedEventArgs e)
         {
             //调用更新方法的Update
-            _Update_PointInf.UPDATE();
+            UpdatePoints.UPDATE();
         }
     }
 

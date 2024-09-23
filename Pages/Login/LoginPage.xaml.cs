@@ -29,7 +29,7 @@ namespace GeoGraph.Pages.Login
         public LoginPage()
         {
             this.InitializeComponent();
-            // 后端未完成 MainWindow._Connect = new GeoGraph.Network.Connect();
+            MainWindow._Connect = new GeoGraph.Network.Connect();
         }
 
         // 这里加入图形验证码窗口
@@ -38,9 +38,8 @@ namespace GeoGraph.Pages.Login
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
-            // 网络未完成 string ret = await MainWindow._Connect.AttemptLoginAsync(username, password);
+            string ret = await Network.Connect.AttemptLoginAsync(username, password);
             // 在这里添加登录逻辑，例如验证用户名和密码
-            string ret = "success";
 
             ContentDialog loginDialog;
             if (ret!=null)
@@ -103,7 +102,7 @@ namespace GeoGraph.Pages.Login
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
-            string ret = await MainWindow._Connect.AttemptRegisterAsync(username, password);
+            string ret = await Network.Connect.AttemptRegisterAsync(username, password);
             // 在这里添加登录逻辑，例如验证用户名和密码
             ContentDialog registerDialog;
             if (ret != null)

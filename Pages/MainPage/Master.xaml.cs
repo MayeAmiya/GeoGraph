@@ -44,20 +44,25 @@ namespace GeoGraph.Pages.MainPage
             }
         }
 
-        private Dictionary<string, Page> _pageInstances = new Dictionary<string, Page>();
+        private static Dictionary<string, Page> _pageInstances = new Dictionary<string, Page>();
 
-        private void NavigateToPage(string itemTag)
+        public static void reset()
+        {
+            _pageInstances.Clear();
+        }
+
+        private static void NavigateToPage(string itemTag)
         {
             if (!_pageInstances.TryGetValue(itemTag, out Page pageInstance))
             {
                 switch (itemTag)
                 {
                     case "MapPage":
-                        if (Assets._MapInfo?.MapName != null)
+                        if (Map._MapInfo?.MapName != null)
                             pageInstance = new GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame();
                         break;
                     case "SavePage":
-                        if (Assets._MapInfo?.MapName != null)
+                        if (Map._MapInfo?.MapName != null)
                             pageInstance = new SaveInfFrame();
                         break;
                     case "Settings":
@@ -72,10 +77,10 @@ namespace GeoGraph.Pages.MainPage
                     _pageInstances[itemTag] = pageInstance;
             }
 
-            if (pageInstance != null && MasterPageFrame.Content != pageInstance)
+            if (pageInstance != null && App.m_mainFrame.Content != pageInstance)
             {
-                MasterPageFrame.Content = pageInstance;  // 直接设置页面实例
-                if(itemTag == "SavePage" && Assets._MapInfo?.MapName != null)
+                App.m_mainFrame.Content = pageInstance;  // 直接设置页面实例
+                if(itemTag == "SavePage" && Map._MapInfo?.MapName != null)
                 {
                     var Save = pageInstance as SaveInfFrame;
                     Save.clear_display();

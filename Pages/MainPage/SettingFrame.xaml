@@ -10,7 +10,46 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <!-- 固定宽度 -->
+            <ColumnDefinition Width="2*"/>
+            <!-- 占用两倍的剩余空间 -->
+        </Grid.ColumnDefinitions>
 
-        
+        <Grid x:Name="UserPane" Grid.Column="0">
+            <!--左侧用户登录-->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Width="400" Height="400">
+                <Image Grid.Row="0" Source="ms-appx:///Assets/StoreLogo.png" Width="400" Height="400"  Tapped="Image_Tapped"/>
+            </StackPanel>
+            
+            <Button Grid.Row="1" Content="ReLogin" Click="ReLoginButton" HorizontalAlignment="Left" Margin="10,10,10,10"/>
+            <Button Grid.Row="2" x:Name ="ResetButton" Content="ReSet Password" Click="ReSetButton" HorizontalAlignment="Left" Margin="10,10,10,10"/>
+            <Button Grid.Row="3" Content="Exit" Click="ExitButton" HorizontalAlignment="Left" Margin="10,10,10,10"/>
+        </Grid>
+
+        <Grid Grid.Column="1">
+            <!--右侧权限管理器-->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="2*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <TextBlock Grid.Row="0" Text="Permission Command InterFace" FontSize="20" Margin="10,10,10,10"/>
+            <ListView Grid.Row="1" x:Name="UsersList"> 
+                
+            </ListView>
+            <StackPanel Grid.Row="2" x:Name="UserControl">
+                
+            </StackPanel>
+        </Grid>
+        <!--权限组管理器 左侧用户登录 头像 更换账户 退出 密码重设 右侧权限管理器 列出所有用户以及权限等级-->
     </Grid>
 </Page>
