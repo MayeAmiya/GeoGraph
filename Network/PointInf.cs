@@ -1,16 +1,21 @@
 ﻿using GeoGraph.Pages.MainPage.MapFrameLogic;
 using Microsoft.UI.Xaml.Controls;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Media.Protection.PlayReady;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace GeoGraph.Network
 {
@@ -103,134 +108,162 @@ namespace GeoGraph.Network
     // 点的总集 所有点信息汇总于此
     public class PointInf
     {
-        private static NetworkClient _client;
-        public static string MapName;
-        public static void PointInfInit(string mapname)
-        {
-            MapName = mapname;
-            ParsePointInfAsync();
-        }
+
         // 在选择地图后初始化 所以这里应当在Assets中初始化
         public PointInf()
         {
-            _client = MainWindow._NetworkClient;
 
-            MapName = null;
             basePoints = new List<BasePoint>();
 
             basicInfo = new Dictionary<int, Property>();
-            EnumInfo = new Dictionary<string, Property>();
-            PageInfo = new Dictionary<string, Property>();
+
+            requse();
         }
         // 点信息列表
         public static List<BasePoint> basePoints;
         // 属性列表
         public static Dictionary<int, Property> basicInfo;
-        public static Dictionary<string, Property> EnumInfo;
-        public static Dictionary<string, Property> PageInfo;
         // 从服务器获取点信息 主表
-        public static async void ParsePointInfAsync()
+
+        public static async void requse()
+        {
+            await ParsePointInfAsync();
+            await ParsePropertyInfAsync();
+        }
+
+        public class ResponseDataP
+        {
+            public string response { get; set; }
+            public List<PointData> content { get; set; }
+        }
+
+        public class PointData
+        {
+            public double X { get; set; }
+            public double Y { get; set; }
+            public int PointInfCode { get; set; }
+        }
+
+        public static async Task<bool> ParsePointInfAsync()
         {
             //这时候要考虑服务器送的数据格式
             //是一个Json 包含一大堆数据 有普通数据类型 也可能是列表
             //对于字符串 整数 浮点数 可以认为是单个量
             //而对于列表和枚举 就需要递归处理
-            if(_client == null)
-            {
-                return;
-            }
+
             //这里我们假设服务器返回的是一个Json字符串
-            string MainPoints = await _client.SendMessageAsync("Points");
+            var requsetsData = new
+            {
+                command = "Points",
+                token = Connect._token,
+                map = Map._MapInfo.MapCode
+            };
+
+            string Data = JsonSerializer.Serialize(requsetsData);
+            string MainPoints = await NetworkClient.SendMessageAsync(Data);
+
+            var responseDataP = JsonSerializer.Deserialize<ResponseDataP>(MainPoints);
             //Point组成是Primary主键 有name 
             //这个Point组成是两个double 是x和y 还有一个页面 是属性 真正的点信息 但是我们的Json本次
             //不需要传输页面 预留出来 之后通过索引值查询从表
             //现在我们解析这个Json
-            var jsonDocument = JsonDocument.Parse(MainPoints);
-            var root = jsonDocument.RootElement;
-
-
-            //解析Json并向basePoints中添加点
-            foreach (var point in root.EnumerateArray())
+            if (responseDataP != null && responseDataP.content != null)
             {
-                var x = point.GetProperty("x").GetDouble();
-                var y = point.GetProperty("y").GetDouble();
-                // 坐标
-                var location = new Windows.Foundation.Point(x, y);
-                // 页面索引值
-                var PointInfCode = point.GetProperty("PointInfCode").GetInt32();
-
-                PointInf.basePoints.Add(new BasePoint(location, PointInfCode));
-                await ParsePropertyInfAsync(PointInfCode);
-            }
-
-        }
-
-        // 从服务器获取属性信息 从表
-        public static async Task<bool> ParsePropertyInfAsync(int requestIndex)
-        {
-            string requestInfo;
-            //我们需要再次考虑服务器的数据类型 我们可以假定服务器的每个值都是固定的 而服务器在搜索后返回我们需要的宽域内容
-            // 发送序号 服务器进行查询处理 发送大批数据
-            requestInfo = "Property " + requestIndex.ToString();
-            //再次考虑服务器送的数据格式
-            string propertyInfo = await _client.SendMessageAsync(requestInfo);
-            //这里我们假设服务器返回的是一个Json字符串 先检验！
-            if(propertyInfo == "null")
-            {
-                return false;
-            }
-            var jsonDocument = JsonDocument.Parse(propertyInfo);
-            var root = jsonDocument.RootElement;
-
-            //解析Json并向properties中添加属性
-            foreach (var property in root.EnumerateArray())
-            {
-                var name = property.GetProperty("Name").GetString();
-                // 是否是主键也许不重要 待定
-                var index = property.GetProperty("Index").GetInt32();
-
-                //如果不是基本数据结构 如string int double bool 那么我们应当认为他是枚举enum 则需要下一步请求
-                //如果是页面枚举 那么页面内容则为索引值 通过索引值请求 具体信息再存入从表
-                //而对于基本枚举 枚举内容也为索引值 在从表中查找对应基本数据值 如果索引值指向页面 则表示页面名
-
-                //发送目前主体的请求码和请求目标的请求码 服务端返回对应信息
-
-                var type = property.GetProperty("Type").GetString(); // 获取类型名字符串
-
-                var obj_content = property.GetProperty("Object").GetString();
-                object obj;
-                //如果是基本数据结构 那么Object就是数据
-                if (type != "Enum" && type != "Page")
+                foreach (var point in responseDataP.content)
                 {
-                    obj = obj_content;
-                    basicInfo.Add(index, new Property(name, index, type, obj));
-                }
-                else
-                {
-                    // 如果是枚举 那么Object就是索引值 那么这是一个列表
-                    // 如果是页面 那么也是一个列表
-                    obj = new List<int>();
-                    foreach (var item in property.GetProperty("Object").EnumerateArray())
-                    {
-                        (obj as List<int>).Add(item.GetInt32());
-                    }
+                    var x = point.X;
+                    var y = point.Y;
+                    // 坐标
+                    var location = new Windows.Foundation.Point(x, y);
+                    // 页面索引值
+                    var PointInfCode = point.PointInfCode;
 
-                    Property finder = new Property(name, index, type, obj);
-                    if (type == "Enum")
-                    {
-                        // 枚举类型
-                        EnumInfo.Add(name, finder);
-                    }
-                    else
-                    {
-                        // 页面类型
-                        PageInfo.Add(name, finder);
-                    }
-                    basicInfo.Add(index, finder);
+                    PointInf.basePoints.Add(new BasePoint(location, PointInfCode));
                 }
             }
             return true;
         }
+
+        // 从服务器获取属性信息 从表
+
+        public class ResponseData
+        {
+            public string response { get; set; }
+            public Dictionary<int, JProperty> content { get; set; }
+        }
+
+        public class JProperty
+        {
+            public string Name { get; set; }
+            public int Index { get; set; }
+            // Type当有约束 String ; Int Double Enum Bool ; List
+            public string Type { get; set; }
+            public object Object { get; set; }
+            public string date { get; set; }
+
+            // 通过检查updated和deleted来判断是否需要更新 事后只需根据索引号上传信息即可
+            public bool deleted = false;
+            public bool updated = false;
+
+            public List<int> getList()
+            {
+                JArray obj = Object as JArray;
+                List<int> list = obj.ToObject<List<int>>();
+                return list;
+            }
+
+        }
+
+        public static async Task<bool> ParsePropertyInfAsync()
+        {
+            string requestInfo;
+            //我们需要再次考虑服务器的数据类型 我们可以假定服务器的每个值都是固定的 而服务器在搜索后返回我们需要的宽域内容
+            // 发送序号 服务器进行查询处理 发送大批数据
+
+            var requestData = new
+            {
+                command = "Properties",
+                token = Connect._token,
+                map = Map._MapInfo.MapCode
+            };
+            string Data = JsonSerializer.Serialize(requestData);
+
+            //再次考虑服务器送的数据格式
+            string propertyInfo = await NetworkClient.SendMessageAsync(Data);
+
+            var responseData = JsonConvert.DeserializeObject<ResponseData>(propertyInfo);
+
+            if (responseData != null && responseData.content != null)
+            {
+                foreach (var kvp in responseData.content)
+                {
+                    int index = kvp.Key;
+                    JProperty property = kvp.Value;
+
+
+                    //如果是基本数据结构 那么Object就是数据
+
+                    if (property.Type != "Enum" && property.Type != "EnumList" && property.Type != "Page")
+                    {
+                        Property finder = new Property(property.Name, property.Index, property.Type, property.Object);
+                        finder.Index = property.Index;
+                        basicInfo.Add(index, finder);
+
+                    }
+                    else
+                    {
+                        Property finder = new Property(property.Name, property.Index, property.Type, property.getList());
+                        finder.Index = property.Index;
+                        basicInfo.Add(index, finder);
+                    }
+
+                }
+
+                //这里我们假设服务器返回的是一个Json字符串 先检验！
+            }
+            return true;
+        }
+
         /*
          * 我们在这里描述一下这个点信息类在本地和在云端的数据结构吧
          * 在本地 点信息由一个点和点信息索引构成
@@ -250,23 +283,7 @@ namespace GeoGraph.Network
          * 每一个项都有一个外键绑定指向一个BasePoint或一个Page 而Page外键绑定指向BasePoint或Page 并且要检查避免循环依赖
          */
         // 获取值
-        public static async void GetValue(int index)
-        {
-            // 这里传入的是PageInfCode 我们要从PointInf中获取
-            // 这个类每次更换点都会刷新 所以独立出来
-            // PageInfCode是一个索引值 通过这个值我们可以找到对应的Page
 
-            // Dict不允许重复索引
-            if (!basicInfo.ContainsKey(index))
-            {
-                if (await ParsePropertyInfAsync(index))
-                    GetValue(index);
-                return;
-            }
-
-            // Page 和 Enum 中的Object是一个List<int> 里面存的是索引值
-            // 通过索引值我们可以找到对应的基本数据
-        }
     }
 
     // 这里存储本次更改的点信息 作用于单个点
@@ -280,8 +297,6 @@ namespace GeoGraph.Network
         {
             _pointinf = Assets._Basic_PointInf;
             Temp_basicInfo = new Dictionary<int, Property>();
-            Temp_EnumInfo = new Dictionary<string, Property>();
-            Temp_PageInfo = new Dictionary<string, Property>();
 
         }
         // 用于UpdatePointInf的更新
@@ -291,15 +306,11 @@ namespace GeoGraph.Network
         }
 
         public Dictionary<int, Property> Temp_basicInfo;
-        public Dictionary<string, Property> Temp_EnumInfo;
-        public Dictionary<string, Property> Temp_PageInfo;
 
         // 清空本次更改信息
         public void clear()
         {
             Temp_basicInfo.Clear();
-            Temp_EnumInfo.Clear();
-            Temp_PageInfo.Clear();
             Temp_Page = null;
             Temp_Point = null;
         }
@@ -363,12 +374,9 @@ namespace GeoGraph.Network
             // 删除本次更改信息列表
             if(!Temp_basicInfo.ContainsKey(temp_item.Index))
             {
-                Property newTemp = new Property(temp_item);
-                newTemp.deleted = true;
-                Temp_basicInfo.Add(newTemp.Index, newTemp);
-                return newTemp;
+                temp_item.deleted = true;
+                Temp_basicInfo.Add(temp_item.Index, temp_item);
             }
-            temp_item.deleted = true;
             return temp_item;
         }
     }

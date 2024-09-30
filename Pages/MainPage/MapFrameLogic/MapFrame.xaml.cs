@@ -63,12 +63,25 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             MainCanvas.Width =Map._MapInfo.Width;
             MainCanvas.Height = Map._MapInfo.Height;
             // 初始化Map图像
+
             BitmapImage bitmapImage = new BitmapImage(new Uri(Map._MapInfo.ImagePath));
+
             Image.Source = bitmapImage;
             // 同时在Assets初始化PointInf和Update的数据 根据地图类型直接引用
             originalPositions = PointInf.basePoints;
+            Draw();
         }
 
+        public void Draw()
+        {
+            originalPositions = PointInf.basePoints;
+            
+            foreach (var point in originalPositions)
+            {
+                if(point.deleted != true)
+                    CreateEllipse(point);
+            }
+        }
 
         private Ellipse CreateEllipse(BasePoint position)
         {

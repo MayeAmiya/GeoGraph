@@ -15,6 +15,9 @@ using Microsoft.UI.Xaml.Navigation;
 using GeoGraph.Network;
 using Windows.System;
 using System.Diagnostics;
+using Newtonsoft.Json.Linq;
+using Microsoft.UI.Xaml.Media.Imaging;
+using static System.Net.Mime.MediaTypeNames;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -35,22 +38,73 @@ namespace GeoGraph.Pages.Login
         // 这里加入图形验证码窗口
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
+            // 请求图形验证码
+            string captcha = await Network.Connect.AttemptCaptchaAsync();
+            // 弹出窗口
+            ContentDialog captchaDialog;
+            if (captcha != null)
+            {
+                StackPanel captchaimage = new StackPanel();
+                Microsoft.UI.Xaml.Controls.Image image = new Microsoft.UI.Xaml.Controls.Image();
+
+                var bitmapImage = new BitmapImage();
+
+                string path = Path.Combine(Assets.absolutePath, "captcha");
+
+                string fullPath = Path.Combine(path, captcha + ".png");
+
+                bitmapImage.UriSource = new Uri(fullPath);
+                image.Source = bitmapImage;
+                captchaimage.Children.Add(image);
+
+                TextBox textBox = new TextBox();
+                textBox.MaxLength = 6;
+                captchaimage.Children.Add(textBox);
+
+                captchaDialog = new ContentDialog
+                {
+                    Title = "Please input Captcha",
+                    Content = captchaimage
+                };
+
+                captchaDialog.CloseButtonText = "OK";
+                captchaDialog.CloseButtonClick += (sender, e) =>
+                {
+                    if (textBox.Text == captcha)
+                    {
+                        LoginButton(sender, null);
+                        captchaDialog.Hide();
+                    }
+                    else
+                    {
+                        captchaDialog.Hide();
+                    }
+
+                };
+                captchaDialog.XamlRoot = this.XamlRoot;
+                await captchaDialog.ShowAsync();
+            }
+        }
+
+        private async void LoginButton(object sender, RoutedEventArgs e)
+        {
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
+            System.Diagnostics.Debug.WriteLine("try login " + username + " " + password);
             string ret = await Network.Connect.AttemptLoginAsync(username, password);
-            // 在这里添加登录逻辑，例如验证用户名和密码
 
+            // 在这里添加登录逻辑，例如验证用户名和密码
             ContentDialog loginDialog;
             if (ret!=null)
             {
                 switch (ret)
                 {
-                    case "success":
+                    default:
                         // 跳转页面
                         System.Diagnostics.Debug.WriteLine("Login Success");
+                        Assets.userImage = await NetworkClient.Download("user",username);
                         MainWindow.NavigateTo(typeof(GeoGraph.Pages.MainPage.Master));
-                        // MainWindow.NavigateTo(typeof(GeoGraph.Pages.Login.WelcomePage));
                         return;
                     case "usernotexist":
                         loginDialog = new ContentDialog
@@ -73,13 +127,6 @@ namespace GeoGraph.Pages.Login
                             Content = "Already Login"
                         };
                         break;
-                    default:
-                        loginDialog = new ContentDialog
-                        {
-                            Title = "Login Failed",
-                            Content = "Unknown Error"
-                        };
-                        break;
                 }
             }
             else
@@ -92,17 +139,76 @@ namespace GeoGraph.Pages.Login
                 };
             }
 
+
             loginDialog.CloseButtonText = "OK";
             loginDialog.XamlRoot = this.XamlRoot;
+
             await loginDialog.ShowAsync();
         }
 
         private async void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
+            // 请求图形验证码
+            string captcha = await Network.Connect.AttemptCaptchaAsync();
+            // 弹出窗口
+            ContentDialog captchaDialog;
+            if (captcha != null)
+            {
+                StackPanel captchaimage = new StackPanel();
+                Microsoft.UI.Xaml.Controls.Image image = new Microsoft.UI.Xaml.Controls.Image();
+
+                var bitmapImage = new BitmapImage();
+
+                string path = Path.Combine(Assets.absolutePath, "captcha");
+                System.Diagnostics.Debug.WriteLine(path);
+
+                string fullPath = Path.Combine(path, captcha + ".png");
+                System.Diagnostics.Debug.WriteLine(fullPath);
+
+                bitmapImage.UriSource = new Uri(fullPath);
+
+                image.Source = bitmapImage;
+                captchaimage.Children.Add(image);
+
+                TextBox textBox = new TextBox();
+                textBox.MaxLength = 6;
+
+                captchaimage.Children.Add(textBox);
+
+                captchaDialog = new ContentDialog
+                {
+                    Title = "Please input Captcha",
+                    Content = captchaimage
+                };
+
+                captchaDialog.CloseButtonText = "OK";
+                captchaDialog.CloseButtonClick += (sender, e) =>
+                {
+                    if (textBox.Text == captcha)
+                    {
+                        RegisterButton(sender, null);
+                        captchaDialog.Hide();
+                    }
+                    else
+                    {
+                        captchaDialog.Hide();
+                    }
+                    
+                };
+                captchaDialog.XamlRoot = this.XamlRoot;
+                await captchaDialog.ShowAsync();
+            }
+        }
+
+        private async void RegisterButton(object sender, RoutedEventArgs e)
+        {
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
+            System.Diagnostics.Debug.WriteLine("try register " + username + " " + password);
             string ret = await Network.Connect.AttemptRegisterAsync(username, password);
+            // ret需要解析
+
             // 在这里添加登录逻辑，例如验证用户名和密码
             ContentDialog registerDialog;
             if (ret != null)
@@ -116,7 +222,7 @@ namespace GeoGraph.Pages.Login
                             Content = "Register Success"
                         };
                         break;
-                    case "userexist":
+                    case "existed":
                         registerDialog = new ContentDialog
                         {
                             Title = "Register Failed",

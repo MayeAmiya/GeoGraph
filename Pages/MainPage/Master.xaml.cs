@@ -71,6 +71,14 @@ namespace GeoGraph.Pages.MainPage
                     case "MapChoosePage":
                         pageInstance = new MapChooseFrame();
                         break;
+                    case "DownloadPage":
+                        if (Map._MapInfo?.MapName != null)
+                            pageInstance = new DownloadFrame();
+                        break;
+                    case "SearchPage":
+                        if (Map._MapInfo?.MapName != null)
+                            pageInstance = new SearchFrame();
+                        break;
                 }
 
                 if (pageInstance != null)
@@ -86,6 +94,24 @@ namespace GeoGraph.Pages.MainPage
                     Save.clear_display();
                     Save.diff_display();
                 }
+
+                if (itemTag == "DownloadPage" && Map._MapInfo?.MapName != null)
+                {
+                    var Download = pageInstance as DownloadFrame;
+                    Download.clear_display();
+                    Download.diff_display();
+                }
+
+                if (itemTag == "Settings")
+                {
+                    var Setting = pageInstance as SettingFrame;
+                    Setting.CommandInterFace();
+                }
+
+                if (itemTag == "MapPage" && Map._MapInfo?.MapName != null)
+                {
+                    var MapPage = pageInstance as GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame;
+                }
             }
         }
 
@@ -93,6 +119,7 @@ namespace GeoGraph.Pages.MainPage
         private void Refresh_Click()
         {
             // refresh the map
+            var MapPage = _pageInstances["MapPage"] as GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame;
         }
 
         public static void NavigateTo(System.Type page)

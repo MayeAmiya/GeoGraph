@@ -223,6 +223,14 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 {
                     //如果不是页面或枚举的话
                     Property ItemNow = find(index);
+                    if(ItemNow == null)
+                    {
+                        continue;
+                    }
+                    if(ItemNow.deleted == true)
+                    {
+                        continue;
+                    }
                     //根据ItemNow的类型进行布局
                     if (ItemNow.Type != "Enum" && ItemNow.Type != "Page")
                     {
@@ -488,6 +496,15 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
                 });
                 // 添加元素项
 
+
+
+                Property newpage = new Property(PageNow);
+                if(Temp_PointInf.Temp_basicInfo.ContainsKey(PageNow.Index))
+                {
+                    Temp_PointInf.Temp_basicInfo.Remove(PageNow.Index);
+                }
+                newpage.Index = PageNow.Index;
+                Temp_PointInf.Temp_basicInfo.Add(PageNow.Index, newpage);
                 
 
                 TextBox textBox = new TextBox
@@ -880,10 +897,10 @@ namespace GeoGraph.Pages.MainPage.MapFrameLogic
             else
             {
                 // 是永久点 删除
-                _mapFrameLogic.RemovePoint();
                 pointInfSelect().deleted = true;
                 Temp_PointInf.Temp_Point = pointInfSelect();
-                UpdatePoints.remove(Temp_PointInf);
+                UpdatePoints.merge(Temp_PointInf);
+                _mapFrameLogic.RemovePoint();
             }
         }
 

@@ -17,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Security.AccessControl;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using WinRT.Interop;
@@ -33,45 +34,6 @@ namespace GeoGraph.Pages.MainPage
     /// </summary>
     public sealed partial class MapChooseFrame : Page
     {
-        public class MapInfo
-        {
-            public string MapName;
-            public int Width;
-            public int Height;
-            public string ImagePath;
-            public string MapInf;
-            public int MapCode;
-            public int MapRank;
-            public bool Changed;
-            public bool Deleted;
-
-            // struct is deep copy
-
-            public MapInfo(MapInfo temp)
-            {
-                MapName = temp.MapName;   
-                Width = temp.Width;       
-                Height = temp.Height;     
-                ImagePath = temp.ImagePath;  
-                MapInf = temp.MapInf;
-                MapCode = temp.MapCode;
-                MapRank = temp.MapRank;
-
-            }
-
-            public MapInfo(string MapName, int Width, int Height, string ImagePath, string MapInf, int MapCode)
-            {
-                this.MapName = MapName;
-                this.Width = Width;
-                this.Height = Height;
-                this.ImagePath = ImagePath;
-                this.MapInf = MapInf;
-                this.MapCode = MapCode;
-                this.MapRank = 0;
-            }
-
-        }
-
         List<MapInfo> mapinfos;
 
         public MapChooseFrame()
@@ -81,19 +43,17 @@ namespace GeoGraph.Pages.MainPage
             this.GetMapInfo();
 
             System.Diagnostics.Debug.WriteLine("MapChooseHere");
-
-            this.InitializeMapListView();
         }
 
-        public void GetMapInfo()
+        public async void GetMapInfo()
         {
             System.Diagnostics.Debug.WriteLine("mapinfosHere");
+            Map.MapList = new List<MapInfo>();
             mapinfos = GeoGraph.Network.Map.MapList;
-            if(mapinfos is null)
-            {
-                System.Diagnostics.Debug.WriteLine("mapinfos is null");
-                mapinfos = new List<MapInfo>();
-            }
+
+            await Map.GetMapList();
+
+            this.InitializeMapListView();
         }
 
         //布置巨大LISTVIEW 向MapListView中填充地图信息
@@ -106,6 +66,10 @@ namespace GeoGraph.Pages.MainPage
             {
                 foreach (var map in mapinfos)
                 {
+                    if (map.Deleted)
+                    {
+                        continue;
+                    }
                     // 创建地图项
                     ListViewItem item;
                     StackPanel stackPanel;
@@ -171,7 +135,7 @@ namespace GeoGraph.Pages.MainPage
                     MapListView.Items.Add(item);
                 }
             }
-            
+
             TextBlock BlockNew = new TextBlock
             {
                 Text = "NewMap Create",
@@ -226,7 +190,6 @@ namespace GeoGraph.Pages.MainPage
                 -1,
                 -1,
                 null,
-                null,
                 DateTime.Now.ToString().GetHashCode() ^ "MapInfo".GetHashCode()
             );
 
@@ -238,7 +201,7 @@ namespace GeoGraph.Pages.MainPage
             MapListView_SelectionChanged(sender, null);
         }
 
-        private void MapListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void MapListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // 获取选中的地图项
             if (MapListView.SelectedItem is ListViewItem selectedItem)
@@ -328,10 +291,10 @@ namespace GeoGraph.Pages.MainPage
 
                         textRank.TextChanged += (sender, e) =>
                         {
-                            if(int.TryParse(textRank.Text, out int rank))
+                            if (int.TryParse(textRank.Text, out int rank))
                             {
-                                if(rank <= Network.Connect._userRank)
-                                mapInfotemp.MapRank = Network.Connect._userRank;
+                                if (rank <= Network.Connect._userRank)
+                                    mapInfotemp.MapRank = Network.Connect._userRank;
                             }
                         };
                         Button imageButton = new Button
@@ -383,7 +346,7 @@ namespace GeoGraph.Pages.MainPage
                                     mapInfotemp.ImagePath = file.Path;
                                     bitmapImage.UriSource = new Uri(mapInfotemp.ImagePath);
                                     MapImage.Source = bitmapImage;
-                                    while(bitmapImage.PixelWidth == 0)
+                                    while (bitmapImage.PixelWidth == 0)
                                     {
                                         await System.Threading.Tasks.Task.Delay(100);
                                     }
@@ -417,23 +380,27 @@ namespace GeoGraph.Pages.MainPage
                             Margin = new Microsoft.UI.Xaml.Thickness(5)
                         };
 
-                        saveButton.Click += (sender, e) =>
+                        saveButton.Click += async (sender, e) =>
                         {
                             mapInfotemp.MapName = textBlockName.Text;
                             mapInfotemp.MapInf = textBlockInf.Text;
                             if (mapInfotemp.MapName != null)
                             {
-                                if(mapInfotemp.ImagePath!= null)
+                                if (mapInfotemp.ImagePath != null)
                                 {
                                     mapinfos.Add(mapInfotemp);
                                     // 刷新地图列表
                                     mapinfos.Remove(selectedMap);
-                                    GeoGraph.Network.UpdateMap.AddMapList(mapInfotemp);
+
                                     InitializeMapListView();
                                     MapListView_SelectionChanged(selectedItem, null);
                                     mapInfotemp.Changed = true;
+
                                     UpdateMap.AddMapList(mapInfotemp);
-                                    MapChoosed(mapInfotemp);
+
+                                    await UpdateMap.Update();
+                                    
+                                    await Map.GetMapList();
                                 }
                             }
                         };
@@ -441,7 +408,7 @@ namespace GeoGraph.Pages.MainPage
 
                         // 将 TextBlock 添加到 StackPanel 中
 
-                        
+
                         stackPanelName.Children.Add(textName);
                         stackPanelName.Children.Add(textBlockName);
                         stackPanelSize.Children.Add(textSize);
@@ -460,9 +427,19 @@ namespace GeoGraph.Pages.MainPage
                     {
                         // 添加图像 限定大小
                         var bitmapImage = new BitmapImage();
+
+
+                        if(mapInfotemp.ImagePath == null)
+                        {
+                            await NetworkClient.Download("map", mapInfotemp.MapName);
+
+                            string path = Path.Combine(Assets.absolutePath, "map");
+
+                            mapInfotemp.ImagePath = Path.Combine(path, mapInfotemp.MapName + ".png");
+                        }
+
                         bitmapImage.UriSource = new Uri(mapInfotemp.ImagePath);
                         MapImage.Source = bitmapImage;
-
                         //逐对添加文本框
                         TextBlock textName = new TextBlock
                         {
@@ -553,29 +530,22 @@ namespace GeoGraph.Pages.MainPage
                             Margin = new Microsoft.UI.Xaml.Thickness(5)
                         };
 
-                        copyButton.Click += (sender, e) =>
+                        chooseButton.Click += (sender, e) =>
                         {
-                            mapInfotemp.MapName = textBlockName.Text;
-                            mapInfotemp.MapInf = textBlockInf.Text;
-                            // 保存地图信息
-                            // 
-                            mapinfos.Add(mapInfotemp);
-                            mapInfotemp.Changed = true;
-                            UpdateMap.AddMapList(mapInfotemp);
-                            // 刷新地图列表
-                            InitializeMapListView();
+                            Map.GetPoints(mapInfotemp);
+                            MapListViewInf.Children.Remove(chooseButton);
+                            TextBlock Choosed = new TextBlock() { Text = "Choosed this map" };
+                            MapListViewInf.Children.Add(Choosed);
                         };
 
-                        chooseButton.Click += (sender, e) => MapChoosed(selectedMap);
-
-                        deleteButton.Click += (sender, e) =>
+                        deleteButton.Click += async(sender, e) =>
                         {
-                            if(Network.Connect._userRank>= selectedMap.MapRank)
+                            if (Network.Connect._userRank >= selectedMap.MapRank)
                             {
                                 selectedMap.Deleted = true;
                                 UpdateMap.AddMapList(selectedMap);
+                                await UpdateMap.Update();
                                 mapinfos.Remove(selectedMap);
-
                                 InitializeMapListView();
                             }
                         };
@@ -587,23 +557,12 @@ namespace GeoGraph.Pages.MainPage
 
                         MapListViewInf.Children.Add(copyButton);
                         MapListViewInf.Children.Add(chooseButton);
+                        MapListViewInf.Children.Add(deleteButton);
 
                     }
                 }
             }
         }
 
-        private void DeleteButton_Click(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void MapChoosed(MapInfo MapChoosedNow)
-        {
-            Map.GetPoints(MapChoosedNow);
-
-            // 取得初始点集 建立 初始点集 更新点集 暂存点 
-            Master.NavigateTo(typeof(GeoGraph.Pages.MainPage.MapFrameLogic.MapFrame));
-        }
     }
 }

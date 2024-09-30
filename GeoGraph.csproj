@@ -14,13 +14,14 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Pages\Login\LoginPage.xaml" />
-    <None Remove="Pages\Login\WelcomePage.xaml" />
+    <None Remove="Pages\MainPage\DownloadFrame.xaml" />
     <None Remove="Pages\MainPage\EmptyFrame.xaml" />
     <None Remove="Pages\MainPage\MapChooseFrame.xaml" />
     <None Remove="Pages\MainPage\MapFrame.xaml" />
     <None Remove="Pages\MainPage\MapFrameLogic\PointInfFrame.xaml" />
     <None Remove="Pages\MainPage\Master.xaml" />
     <None Remove="Pages\MainPage\SaveInfFrame.xaml" />
+    <None Remove="Pages\MainPage\SearchFrame.xaml" />
     <None Remove="Pages\MainPage\SettingFrame.xaml" />
   </ItemGroup>
 
@@ -65,11 +66,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\Login\WelcomePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Page Update="Pages\Login\LoginPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -98,6 +94,16 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Remove="Pages\MainPage\MapChooseFrame.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\MainPage\SearchFrame.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\MainPage\DownloadFrame.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\MainPage\EmptyFrame.xaml">

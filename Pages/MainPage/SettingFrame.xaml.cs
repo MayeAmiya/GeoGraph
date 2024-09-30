@@ -13,6 +13,11 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using GeoGraph.Network;
+using Microsoft.UI.Xaml.Media.Imaging;
+using System.Diagnostics;
+using WinRT.Interop;
+using Microsoft.UI.Xaml.Shapes;
+using Newtonsoft.Json.Linq;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -28,11 +33,67 @@ namespace GeoGraph.Pages.MainPage
         public SettingFrame()
         {
             this.InitializeComponent();
+
+            if (!string.IsNullOrEmpty(Assets.userImage) && File.Exists(Assets.userImage))
+            {
+                var bitmapImage = new BitmapImage();
+                bitmapImage.UriSource = new Uri(Assets.userImage); // 设置图像路径
+
+                userImage.Source = bitmapImage; // 将图像源设置为BitmapImage
+            }
+            else
+            {
+                // 文件不存在，可以设置一个默认图像或处理错误
+                userImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/StoreLogo.png")); // 示例默认图像
+            }
         }
 
-        private void Image_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void Image_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            
+            try
+            {
+                var picker = new Windows.Storage.Pickers.FileOpenPicker();
+
+                IntPtr hwnd = WindowNative.GetWindowHandle(App.GetWindow());
+                InitializeWithWindow.Initialize(picker, hwnd);
+
+                picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+                picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
+
+                picker.FileTypeFilter.Add(".png");
+
+                // 显示文件选择器
+                Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
+
+                if (file != null)
+                {
+                    // 用户选择了图片
+                    string path = System.IO.Path.Combine(Assets.absolutePath, "user");
+                    string fullpath = System.IO.Path.Combine(path, Network.Connect._username+".png");
+
+                    path = System.IO.Path.Combine(Assets.absolutePath, "user");
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+
+                    File.Copy(file.Path, fullpath, true);
+                    await NetworkClient.Upload("user", Network.Connect._username, true, file.Path);
+
+                    Assets.userImage = file.Path;
+                    userImage.Source = new BitmapImage(new Uri(Assets.userImage));
+                }
+                else
+                {
+                    // 用户取消了文件选择
+                    Debug.WriteLine("No image selected.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // 输出异常信息
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
         }
 
         private void ReLoginButton(object sender, RoutedEventArgs e)
@@ -74,10 +135,13 @@ namespace GeoGraph.Pages.MainPage
                 {
                     // 重置密码
                     // 退出登录
-                    _ = await Network.Connect.AttemptReSetAsync(passwordBox1.Text);
-                    MainWindow.NavigateTo(typeof(GeoGraph.Pages.Login.LoginPage));
-                    Master.reset();
-                    Assets.reset();
+                    string _ret = await Network.Connect.AttemptReSetAsync(passwordBox1.Text);
+                    if(_ret == "success")
+                    {
+                        MainWindow.NavigateTo(typeof(GeoGraph.Pages.Login.LoginPage));
+                        Master.reset();
+                        Assets.reset();
+                    }
 
                 }
                 else
@@ -120,9 +184,10 @@ namespace GeoGraph.Pages.MainPage
             App.Current.Exit();
         }
 
-        private void CommandInterFace()
+        public async void CommandInterFace()
         {
-            if(Network.Connect._userRank >8)
+            await User.RequestUserListAsync();
+            if (Network.Connect._userRank >8)
             {
                 // 初始化管理界面
                 // 读取用户列表->用户数据库 ->展示列表 选择列表填表
@@ -131,11 +196,12 @@ namespace GeoGraph.Pages.MainPage
                 // 现在Connect中有userlist了
 
                 // "UsersList"
-                foreach(User tempuser in Network.User.userlist)
+                UsersList.Items.Clear();
+                foreach (User tempuser in Network.User.userlist)
                 {
                     ListViewItem userItem = new ListViewItem();
                     TextBlock textBlock = new TextBlock();
-                    textBlock.Text = "Name : "+ tempuser.username+  "Rank = " + tempuser.userRank;
+                    textBlock.Text = "Name : "+ tempuser.username+  " Rank = " + tempuser.userRank;
                     userItem.Content = textBlock;
                     userItem.Tapped += (sender, e) =>
                     {
@@ -144,7 +210,7 @@ namespace GeoGraph.Pages.MainPage
                         RadioButtons radioButtons = new RadioButtons();
                         radioButtons.Items.Add(new RadioButton { Content = "Read" });
                         radioButtons.Items.Add(new RadioButton { Content = "Write" });
-                        radioButtons.Items.Add(new RadioButton { Content = "RW" });
+                        radioButtons.Items.Add(new RadioButton { Content = "Delete" });
 
                         switch (tempuser.permission)
                         {
@@ -154,7 +220,7 @@ namespace GeoGraph.Pages.MainPage
                             case "Write":
                                 radioButtons.SelectedIndex = 1;
                                 break;
-                            case "RW":
+                            case "Delete":
                                 radioButtons.SelectedIndex = 2;
                                 break;
                         }
@@ -168,10 +234,46 @@ namespace GeoGraph.Pages.MainPage
                             }
                         };
 
-                        if (Network.Connect._userRank < tempuser.userRank)
+                        TextBlock textBlock1 = new TextBlock()
+                        {
+                            Text = "Rank : "
+                        };
+                        TextBox textBox = new TextBox()
+                        {
+                            Text = tempuser.userRank.ToString()
+                        };
+                        textBox.TextChanged += (sender, e) =>
+                        {
+                            tempuser.userRank = Convert.ToInt32(textBox.Text);
+                        };
+                       
+                        StackPanel newstack = new StackPanel();
+                        
+                        newstack.Children.Add(textBlock1);
+                        newstack.Children.Add(textBox);
+
+                        UserControl.Children.Add(newstack);
+
+                        if (Network.Connect._userRank <= tempuser.userRank)
                         {
                             radioButtons.IsEnabled = false;
+                            textBox.IsEnabled = false;
                         }
+                        UserControl.Children.Add(radioButtons);
+
+                        Button button = new Button()
+                        {
+                            Content = "Update Selected User"
+                        };
+                        button.Click += async (sender, e) =>
+                        {
+                            UpdateUser.AddUserList(tempuser);
+                            await UpdateUser.Update();
+                            await User.RequestUserListAsync();
+                            CommandInterFace();
+                        };
+                        UserControl.Children.Add(button);
+
                     };
 
                     UsersList.Items.Add(userItem);

@@ -17,8 +17,9 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem Icon="Folder" Content="地图选择" Tag="MapChoosePage" />
                 <NavigationViewItem Icon="Play" Content="地图页面" Tag="MapPage" />
-                <NavigationViewItem Icon="Save" Content="上传与保存" Tag="SavePage" />
-
+                <NavigationViewItem Icon="Save" Content="上传更改" Tag="SavePage" />
+                <NavigationViewItem Icon="Download" Content="保存数据" Tag="DownloadPage" />
+                <NavigationViewItem Icon="Find" Content="查询结果" Tag="SearchPage" />
             </NavigationView.MenuItems>
 
             <Frame x:Name="MasterPageFrame"/>

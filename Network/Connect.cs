@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -26,6 +27,16 @@ namespace GeoGraph.Network
             _client = MainWindow._NetworkClient;
         }
         // 登录
+
+        public static string ComputeHash(string username, string password)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var inputBytes = Encoding.UTF8.GetBytes(username + password);
+                var hashBytes = sha256.ComputeHash(inputBytes);
+                return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+            }
+        }
         public static async Task<string> AttemptLoginAsync(string username, string password)
         {
             try
@@ -39,19 +50,31 @@ namespace GeoGraph.Network
                 HashCode hashCode = new HashCode();
                 hashCode.Add(username);
                 hashCode.Add(password);
-                int combinedHash = hashCode.ToHashCode();
 
                 var loginData = new
                 {
                     command = "login", 
+                    token = "null",
                     user = username,
-                    hash = combinedHash
+                    hash = ComputeHash(username,password)
                 };
 
                 string jsonString = JsonSerializer.Serialize(loginData);
 
                 // 发送JSON 但我们可以认为返回的也是个json 所以要解析
-                _token = await _client.SendMessageAsync("login " + jsonString);
+                var json = await NetworkClient.SendMessageAsync(jsonString);
+
+                var jsonDocument = JsonDocument.Parse(json);
+                var root = jsonDocument.RootElement;
+
+                var response = root.GetProperty("response");
+
+                // 提取数据
+                _username = username;
+                _permission = response.GetProperty("permission").GetString();
+                _userInfo = response.GetProperty("userInfo").GetString();
+                _userRank = response.GetProperty("userRank").GetInt32();
+                _token = response.GetProperty("token").GetString();
 
                 // 在这里处理登录结果
                 return _token;
@@ -77,19 +100,23 @@ namespace GeoGraph.Network
                 HashCode hashCode = new HashCode();
                 hashCode.Add(username);
                 hashCode.Add(password);
-                int combinedHash = hashCode.ToHashCode();
 
                 var registerData = new
                 {
-                    command = "register", 
+                    command = "register",
+                    token = "null",
                     user = username,
-                    hash = combinedHash
+                    hash = ComputeHash(username, password)
                 };
 
                 string jsonString = JsonSerializer.Serialize(registerData);
 
                 // 发送JSON
-                string _ret = await _client.SendMessageAsync(jsonString);
+                string json = await NetworkClient.SendMessageAsync(jsonString);
+
+                var jsonDocument = JsonDocument.Parse(json);
+                var root = jsonDocument.RootElement;
+                string _ret = root.GetProperty("response").GetString();
 
                 // 在这里处理注册结果
                 return _ret;
@@ -115,19 +142,24 @@ namespace GeoGraph.Network
                 HashCode hashCode = new HashCode();
                 hashCode.Add(_username);
                 hashCode.Add(password);
-                int combinedHash = hashCode.ToHashCode();
 
                 var resetData = new
                 {
                     command = "resetpassword",
+                    token = _token,
                     user = _username,
-                    hash = combinedHash
+                    hash = ComputeHash(_username, password)
                 };
 
                 string jsonString = JsonSerializer.Serialize(resetData);
 
                 // 发送JSON
-                string _ret = await _client.SendMessageAsync(jsonString);
+                string json = await NetworkClient.SendMessageAsync(jsonString);
+
+
+                var jsonDocument = JsonDocument.Parse(json);
+                var root = jsonDocument.RootElement;
+                string _ret = root.GetProperty("response").GetString();
 
                 // 在这里处理注册结果
                 return _ret;
@@ -140,7 +172,31 @@ namespace GeoGraph.Network
             }
         }
         
+        //验证码
+        public static async Task<string> AttemptCaptchaAsync()
+        {
+            if (_client == null)
+                return null;
 
+            var loginData = new
+            {
+                command = "Captcha",
+                token = "null"
+            };
+
+            string jsonString = JsonSerializer.Serialize(loginData);
+
+            // 发送JSON 但我们可以认为返回的也是个json 所以要解析
+            var json = await NetworkClient.SendMessageAsync(jsonString);
+
+            var jsonDocument = JsonDocument.Parse(json);
+            var root = jsonDocument.RootElement;
+
+            var Captcha = root.GetProperty("captcha").GetString();
+
+            await NetworkClient.Download("captcha",Captcha);
+            return Captcha;
+        }
         // 祝贺
         public static string Greeting()
         {

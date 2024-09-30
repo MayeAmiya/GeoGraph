@@ -49,11 +49,11 @@ namespace GeoGraph
         public static Frame m_mainFrame;
 
         public static Frame MainFrame { get; set; }
-        public static string _IP = "localhost";
-        public static int _Port = 0721;
+        public static string _IP = "127.0.0.1";
+        public static int _Port = 10721;
         public static int _MaxreconnectTime = 5000;
         public static int _MaxreconnectTimes = 3;
-
+        public static string saveDirectory = "./cache";
         public static Window GetWindow()
         {
             return App.m_window;

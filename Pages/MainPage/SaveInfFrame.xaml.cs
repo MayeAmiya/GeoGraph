@@ -37,10 +37,32 @@ namespace GeoGraph.Pages.MainPage
         public static PointInf _Basic_PointInf;
         public static UpdatePoints _Update_PointInf;
 
+        // 最重要的部分
+        private Property find(int Index)
+        {
+            Property Now;
+            if (UpdatePoints.Update_basicInfo.ContainsKey(Index))
+            {
+                Now = UpdatePoints.Update_basicInfo[Index];
+                return Now;
+            }
+            else if (PointInf.basicInfo.ContainsKey(Index))
+            {
+                Now = PointInf.basicInfo[Index];
+                return Now;
+            }
+            else
+            {
+                Now = null;
+                return Now;
+            }
+        }
+
         // 这里要得到什么 要得到updatepointinf 和 pointinf 然后遍历updatepointinf 对其中的point先遍历
         // 然后得到pointcode 再陈列
         public void diff_display()
         {
+            clear_display();
             foreach (BasePoint temp in UpdatePoints.Update_basePoints)
             {
                 // 这里要显示删除的点
@@ -92,7 +114,7 @@ namespace GeoGraph.Pages.MainPage
             {
                 // 这里要显示更新的点
                 // 每个点都创建一个块 塞入stackpanel
-                var temp = UpdatePoints.Update_basicInfo[Index];
+                var temp = find(Index);
                 StackPanel _stackPanel = new StackPanel();
                 TextBlock textBlockType = new TextBlock();
                 switch (temp.Type){
@@ -103,16 +125,27 @@ namespace GeoGraph.Pages.MainPage
 
                         if (PointInf.basicInfo.ContainsKey(Index))
                         {
-                            // 存在则是更改
-                            var original = PointInf.basicInfo[Index];
-                            _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Yellow);
-                            TextBlock textBlock = new TextBlock();
-                            textBlock.Text = "Updated Item Name : " + temp.Name + " Value : " + temp.Object as string;
-                            TextBlock textBlockOriginal = new TextBlock();
-                            textBlockOriginal.Text = "Original Item Name : " + original.Name + " Value : " + original.Object as string;
-
-                            _stackPanel.Children.Add(textBlock);
-                            _stackPanel.Children.Add(textBlockOriginal);
+                            if(temp.deleted == true)
+                            {
+                                // 存在则是删除
+                                var original = find(Index);
+                                _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                                TextBlock textBlock = new TextBlock();
+                                textBlock.Text = "Deleted Item Name : " + original.Name + " Value : " + original.Object as string;
+                                _stackPanel.Children.Add(textBlock);
+                            }
+                            else
+                            {
+                                // 存在则是更改
+                                var original = PointInf.basicInfo[Index];
+                                _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Yellow);
+                                TextBlock textBlock = new TextBlock();
+                                textBlock.Text = "Updated Item Name : " + temp.Name + " Value : " + temp.Object as string;
+                                TextBlock textBlockOriginal = new TextBlock();
+                                textBlockOriginal.Text = "Original Item Name : " + original.Name + " Value : " + original.Object as string;
+                                _stackPanel.Children.Add(textBlock);
+                                _stackPanel.Children.Add(textBlockOriginal);
+                            }
                         }
                         else
                         {
@@ -130,20 +163,36 @@ namespace GeoGraph.Pages.MainPage
                         List<int> tuple = temp.Object as List<int>;
                         if (PointInf.basicInfo.ContainsKey(Index))
                         {
-                            // 存在则是更改
-                            var original = PointInf.basicInfo[Index];
+                            if(temp.deleted == true)
+                            {
+                                // 存在则是更改
+                                var original = find(Index);
 
-                            _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Yellow);
+                                _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Red);
 
-                            TextBlock textBlock = new TextBlock();
+                                TextBlock textBlock = new TextBlock();
 
-                            List<int> oldtuple = PointInf.basicInfo[Index].Object as List<int>;
+                                textBlock.Text = "Deleted Enum Name : " + temp.Name + " " + UpdatePoints.Update_basicInfo[tuple[0]].Object as string;
 
-                            textBlock.Text = "Updated Enum Name : " + temp.Name + " " + UpdatePoints.Update_basicInfo[tuple[0]].Object as string;
-                            TextBlock textBlockOriginal = new TextBlock();
-                            textBlockOriginal.Text = "Original Enum Name : " + original.Name + " Value : " + PointInf.basicInfo[oldtuple[0]].Object as string;
-                            _stackPanel.Children.Add(textBlock);
-                            _stackPanel.Children.Add(textBlockOriginal);
+                                _stackPanel.Children.Add(textBlock);
+                            }
+                            else
+                            {
+                                // 存在则是更改
+                                var original = PointInf.basicInfo[Index];
+
+                                _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Yellow);
+
+                                TextBlock textBlock = new TextBlock();
+
+                                List<int> oldtuple = PointInf.basicInfo[Index].Object as List<int>;
+
+                                textBlock.Text = "Updated Enum Name : " + temp.Name + " " + UpdatePoints.Update_basicInfo[tuple[0]].Object as string;
+                                TextBlock textBlockOriginal = new TextBlock();
+                                textBlockOriginal.Text = "Original Enum Name : " + original.Name + " Value : " + PointInf.basicInfo[oldtuple[0]].Object as string;
+                                _stackPanel.Children.Add(textBlock);
+                                _stackPanel.Children.Add(textBlockOriginal);
+                            }
                         }
                         else
                         {
@@ -161,18 +210,30 @@ namespace GeoGraph.Pages.MainPage
                         _stackPanel.Children.Add(textBlockType);
                         if (PointInf.basicInfo.ContainsKey(Index))
                         {
-                            var original = PointInf.basicInfo[Index];
+                            if(temp.deleted == true)
+                            {
+                                var original = find(Index);
 
-                            _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Yellow);
-                            TextBlock textBlock = new TextBlock();
-                            textBlock.Text = temp.Name + " Last Changed date : " + original.date;
-                            _stackPanel.Children.Add(textBlock);
+                                _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Red);
+                                TextBlock textBlock = new TextBlock();
+                                textBlock.Text = "Deleted Page : " +temp.Name + " Last Changed date : " + original.date;
+                                _stackPanel.Children.Add(textBlock);
+                            }
+                            else
+                            {
+                                var original = find(Index);
+
+                                _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Yellow);
+                                TextBlock textBlock = new TextBlock();
+                                textBlock.Text = "Updated Page : " + temp.Name + " Last Changed date : " + original.date;
+                                _stackPanel.Children.Add(textBlock);
+                            }
                         }
                         else
                         {
                             _stackPanel.Background = new SolidColorBrush(Microsoft.UI.Colors.Green);
                             TextBlock textBlock = new TextBlock();
-                            textBlock.Text = temp.Name + " Created date : " + temp.date;
+                            textBlock.Text = "Created Page : " + temp.Name + " Created date : " + temp.date;
                             _stackPanel.Children.Add(textBlock);
                         }
 

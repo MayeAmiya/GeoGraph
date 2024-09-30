@@ -24,6 +24,7 @@
             <TextBox x:Name="UsernameTextBox" PlaceholderText="Username" Width="200" Margin="0,0,0,10" KeyDown="UsernameTextBox_KeyDown"/>
             <PasswordBox x:Name="PasswordBox" PlaceholderText="Password" Width="200" Margin="0,0,0,20" KeyDown="PasswordBox_KeyDown"/>
             <Button Content="Login" Click="LoginButton_Click" Width="200" HorizontalAlignment="Center"/>
+            <Button Content="Register" Click="RegisterButton_Click" Width="200" HorizontalAlignment="Center"/>
         </StackPanel>
     </Grid>
 </Page>

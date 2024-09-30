@@ -14,6 +14,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using System.Diagnostics;
 using GeoGraph.Pages.Login;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 
 // To learn more about WinUI, the WinUI project structure,
@@ -37,10 +38,21 @@ namespace GeoGraph
             // 设置主页面指向
             App.MainFrame = this.MainFrame;
 
-            // 后端未完成 _NetworkClient = new GeoGraph.Network.NetworkClient();
+            _NetworkClient = new GeoGraph.Network.NetworkClient();
             // 初始化资源
             _Assets = new GeoGraph.Network.Assets();
             // 导航到初始化页面
+
+            string absolutePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets");
+            Network.Assets.absolutePath = absolutePath;
+            System.Diagnostics.Debug.WriteLine($"当前资源目录: {absolutePath}");
+
+            // 检查目录是否存在，如果不存在则创建它
+            if (!Directory.Exists(absolutePath))
+            {
+                Directory.CreateDirectory(absolutePath);
+                System.Diagnostics.Debug.WriteLine($"资源目录: {absolutePath} 已创建");
+            }
             MainWindow.NavigateTo(typeof(GeoGraph.Pages.Login.LoginPage));
         }
 
